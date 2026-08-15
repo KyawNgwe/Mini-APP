@@ -361,6 +361,45 @@
   .gate .err{ color:var(--brick); font-size:12px; margin-top:10px; height:14px; }
   .gate .hint{ margin-top:18px; font-size:11px; color:var(--parchment-dim); opacity:.6; }
 
+  /* telegram settings modal */
+  .settings-btn{
+    width:34px;height:34px; border-radius:50%;
+    border:1px solid var(--line); background:var(--wok-2);
+    color:var(--parchment-dim); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:15px;
+  }
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    display:flex; align-items:center; justify-content:center; z-index:95;
+    padding:20px;
+  }
+  .modal-card{
+    width:100%; max-width:400px; background:var(--wok);
+    border:1px solid var(--line); border-radius:16px; padding:22px;
+  }
+  .modal-card h3{
+    font-family:'Noto Serif SC',serif; margin:0 0 4px; font-size:17px; display:flex; align-items:center; gap:8px;
+  }
+  .modal-card .desc{ font-size:12px; color:var(--parchment-dim); line-height:1.6; margin:0 0 16px; }
+  .modal-card .field label{ font-size:11.5px; color:var(--parchment-dim); }
+  .modal-card .field input{ font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0; text-align:left; width:100%; }
+  .modal-actions{ display:flex; gap:10px; margin-top:18px; }
+  .modal-actions button{
+    flex:1; border:none; padding:11px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer;
+  }
+  .modal-save{ background:var(--brick); color:#fff; }
+  .modal-test{ background:var(--wok-2); color:var(--parchment); border:1px solid var(--line) !important; }
+  .modal-close{ text-align:center; margin-top:12px; font-size:12px; color:var(--parchment-dim); cursor:pointer; }
+  .modal-status{ font-size:12px; margin-top:10px; min-height:16px; }
+  .modal-status.ok{ color:var(--scallion); }
+  .modal-status.err{ color:var(--brick); }
+  .tg-badge{
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:10.5px; color:var(--parchment-dim); margin-top:2px;
+  }
+  .tg-dot{ width:6px;height:6px;border-radius:50%; background:var(--scallion); }
+  .tg-dot.off{ background:var(--parchment-dim); opacity:.5; }
+
   .toast{
     position:fixed; top:18px; left:50%; transform:translateX(-50%) translateY(-40px);
     background:var(--scallion); color:var(--ink); font-weight:700; font-size:13px;
@@ -445,6 +484,61 @@
     catch(e){ return null; }
   }
 
+  /* ---------------- telegram ---------------- */
+  async function getTelegramConfig(){
+    var t = await storageGet("config:telegram_token", true);
+    var c = await storageGet("config:telegram_chatid", true);
+    return {
+      token: t && t.value ? t.value : "",
+      chatId: c && c.value ? c.value : ""
+    };
+  }
+  async function saveTelegramConfig(token, chatId){
+    await storageSet("config:telegram_token", token, true);
+    await storageSet("config:telegram_chatid", chatId, true);
+  }
+  function buildOrderMessage(order){
+    var lines = [];
+    lines.push("🍜 老灶食堂 · 新订单");
+    lines.push("桌号：" + order.table);
+    lines.push("时间：" + fmtTime(order.time));
+    lines.push("");
+    order.items.forEach(function(it){
+      lines.push("• " + it.name + " ×" + it.qty + "  ¥" + (it.price*it.qty));
+    });
+    lines.push("");
+    lines.push("合计：¥" + order.total);
+    if(order.remark) lines.push("备注：" + order.remark);
+    return lines.join("\n");
+  }
+  async function sendTelegramMessage(text){
+    var cfg = await getTelegramConfig();
+    if(!cfg.token || !cfg.chatId){
+      return { ok:false, reason:"not_configured" };
+    }
+    try{
+      var res = await fetch("https://api.telegram.org/bot" + cfg.token + "/sendMessage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: cfg.chatId, text: text })
+      });
+      var data = await res.json();
+      if(!res.ok || !data.ok){
+        return { ok:false, reason: (data && data.description) || ("HTTP " + res.status) };
+      }
+      return { ok:true };
+    } catch(e){
+      return { ok:false, reason: "network" };
+    }
+  }
+  async function notifyTelegramForOrder(order){
+    var text = buildOrderMessage(order);
+    var result = await sendTelegramMessage(text);
+    if(!result.ok){
+      console.warn("Telegram 通知未发送：", result.reason);
+    }
+  }
+
   /* ---------------- state ---------------- */
   var state = {
     view: "customer", // customer | admin
@@ -456,7 +550,13 @@
     submitting: false,
     adminUnlocked: false,
     adminOrders: [],
-    knownOrderIds: {}
+    knownOrderIds: {},
+    settingsOpen: false,
+    tgToken: "",
+    tgChatId: "",
+    tgStatus: "",
+    tgStatusType: "",
+    tgConfigured: false
   };
 
   var root = document.getElementById("root");
@@ -677,6 +777,7 @@
     };
 
     await storageSet("orders:" + order.id, JSON.stringify(order), true);
+    notifyTelegramForOrder(order); // fire-and-forget, doesn't block the UI
 
     // reset + show stamp
     state.cart = {};
@@ -733,9 +834,22 @@
     var todayTotal = state.adminOrders.reduce(function(s,o){ return s + o.total; }, 0);
 
     wrap.appendChild(el("div", {class:"admin-top"}, [
-      el("div", {class:"admin-title"}, [el("span",{class:"live-dot"}), "后厨接单台"]),
-      el("a", {class:"back-link", onclick:function(){ stopPolling(); state.view="customer"; render(); }}, ["返回点餐 →"])
+      el("div", {}, [
+        el("div", {class:"admin-title"}, [el("span",{class:"live-dot"}), "后厨接单台"]),
+        el("div", {class:"tg-badge"}, [
+          el("span", {class:"tg-dot" + (state.tgConfigured ? "" : " off")}),
+          state.tgConfigured ? "Telegram 通知已开启" : "未配置 Telegram 通知"
+        ])
+      ]),
+      el("div", {style:"display:flex; gap:10px; align-items:center;"}, [
+        el("div", {class:"settings-btn", onclick:openSettings}, ["⚙️"]),
+        el("a", {class:"back-link", onclick:function(){ stopPolling(); state.view="customer"; render(); }}, ["返回点餐 →"])
+      ])
     ]));
+
+    if(state.settingsOpen){
+      wrap.appendChild(renderSettingsModal());
+    }
 
     wrap.appendChild(el("div", {class:"admin-stats"}, [
       el("div", {class:"stat-card"}, [el("div",{class:"num"},[String(newCount)]), el("div",{class:"lbl"},["新订单"])]),
@@ -855,6 +969,7 @@
 
   function startPolling(){
     fetchOrders();
+    refreshTelegramBadge();
     if(pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(fetchOrders, 4000);
     if("Notification" in window && Notification.permission === "default" && !notifyPermissionAsked){
@@ -864,6 +979,86 @@
   }
   function stopPolling(){
     if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  async function refreshTelegramBadge(){
+    var cfg = await getTelegramConfig();
+    state.tgConfigured = !!(cfg.token && cfg.chatId);
+    if(state.view === "admin" && state.adminUnlocked) render();
+  }
+
+  async function openSettings(){
+    var cfg = await getTelegramConfig();
+    state.tgToken = cfg.token;
+    state.tgChatId = cfg.chatId;
+    state.tgStatus = "";
+    state.tgStatusType = "";
+    state.settingsOpen = true;
+    render();
+  }
+
+  function renderSettingsModal(){
+    var statusEl = el("div", {class:"modal-status " + state.tgStatusType, id:"tgStatus"}, [state.tgStatus]);
+
+    return el("div", {class:"modal-overlay", onclick:function(e){ if(e.target === e.currentTarget){ state.settingsOpen=false; render(); } }}, [
+      el("div", {class:"modal-card"}, [
+        el("h3", {}, ["🔔 Telegram 自动通知"]),
+        el("div", {class:"desc"}, [
+          "客人下单后会自动把订单发到你的 Telegram。需要先找 @BotFather 创建一个机器人拿到 Token，再和机器人随便发条消息，用 Token 打开 https://api.telegram.org/bot<TOKEN>/getUpdates 就能看到你的 chat id。"
+        ]),
+        el("div", {class:"field"}, [
+          el("label", {}, ["Bot Token"]),
+          el("input", {
+            type:"text", placeholder:"123456789:AA...", value: state.tgToken,
+            oninput:function(e){ state.tgToken = e.target.value.trim(); }
+          })
+        ]),
+        el("div", {class:"field"}, [
+          el("label", {}, ["Chat ID"]),
+          el("input", {
+            type:"text", placeholder:"例如 123456789 或 -100123456789", value: state.tgChatId,
+            oninput:function(e){ state.tgChatId = e.target.value.trim(); }
+          })
+        ]),
+        statusEl,
+        el("div", {class:"modal-actions"}, [
+          el("button", {class:"modal-test", onclick: testTelegram}, ["发送测试消息"]),
+          el("button", {class:"modal-save", onclick: saveAndCloseSettings}, ["保存"])
+        ]),
+        el("div", {class:"modal-close", onclick:function(){ state.settingsOpen=false; render(); }}, ["取消"])
+      ])
+    ]);
+  }
+
+  function setTgStatus(msg, type){
+    state.tgStatus = msg;
+    state.tgStatusType = type;
+    var el2 = document.getElementById("tgStatus");
+    if(el2){ el2.textContent = msg; el2.className = "modal-status " + type; }
+  }
+
+  async function testTelegram(){
+    if(!state.tgToken || !state.tgChatId){
+      setTgStatus("请先填写 Token 和 Chat ID", "err");
+      return;
+    }
+    setTgStatus("发送中…", "");
+    await saveTelegramConfig(state.tgToken, state.tgChatId);
+    var result = await sendTelegramMessage("✅ 老灶食堂后厨通知测试成功，配置完成！");
+    if(result.ok){
+      setTgStatus("发送成功，请查看 Telegram", "ok");
+    } else if(result.reason === "network"){
+      setTgStatus("发送失败：网络请求被拦截或跨域限制", "err");
+    } else {
+      setTgStatus("发送失败：" + result.reason, "err");
+    }
+  }
+
+  async function saveAndCloseSettings(){
+    await saveTelegramConfig(state.tgToken, state.tgChatId);
+    state.tgConfigured = !!(state.tgToken && state.tgChatId);
+    state.settingsOpen = false;
+    render();
   }
 
   render();
