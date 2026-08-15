@@ -1,60 +1,91 @@
-&lt;!DOCTYPE html&gt;
-&lt;html lang="zh"&gt;
-&lt;head&gt;
-&lt;meta charset="UTF-8"&gt;
-&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
-&lt;title&gt;🍜 点餐菜单&lt;/title&gt;
-&lt;style&gt;
-  body { font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 16px; }
-  .dish { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; }
-  button { background: #ff6b35; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 16px; }
-  #cart { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 12px; box-shadow: 0 -2px 8px rgba(0,0,0,.1); }
-&lt;/style&gt;
-&lt;/head&gt;
-&lt;body&gt;
-&lt;h2&gt;🍜 本店菜单&lt;/h2&gt;
-&lt;div id="menu"&gt;&lt;/div&gt;
-&lt;div id="cart"&gt;
-  &lt;div id="list"&gt;&lt;/div&gt;
-  &lt;button onclick="checkout()"&gt;✅ 下单&lt;/button&gt;
-&lt;/div&gt;
+const TelegramBot = require('node-telegram-bot-api');
+const token = '8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk';
+const bot = new TelegramBot(token, { polling: true });
 
-&lt;script&gt;
-const TOKEN = "8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk"; // 👈 你的 token
-const OWNER_ID = "1949334561"; // 👈 老板 chat_id
+// ===== 配置：老板的 chat id（怎么拿，看下面注释）=====
+const BOSS_ID = 1949334561; // ⬅️ 改成老板的ID
 
-const menu = { "🍜 牛肉面": 25, "🥟 饺子": 18, "🍚 炒饭": 15 };
-let cart = {};
+// 菜单：id -> 名称和价格
+const MENU = {
+  burger: { name: '🍔 牛肉堡', price: 15 },
+  fries:  { name: '🍟 薯条',   price: 8 },
+  cola:   { name: '🥤 可乐',   price: 5 },
+  salad:  { name: '🥗 沙拉',   price: 12 },
+};
 
-// 渲染菜单
-for (const [dish, price] of Object.entries(menu)) {
-  document.getElementById("menu").innerHTML +=
-    `&lt;div class="dish"&gt;&lt;span&gt;${dish} ¥${price}&lt;/span&gt;
-     &lt;button onclick="add('${dish}')"&gt;＋&lt;/button&gt;&lt;/div&gt;`;
+// 每个客人的购物车: chatId -> { 菜品id: 数量 }
+const carts = {};
+
+function getCart(chatId) {
+  if (!carts[chatId]) carts[chatId] = {};
+  return carts[chatId];
 }
 
-function add(dish) {
-  cart[dish] = (cart[dish] || 0) + 1;
-  render();
-}
-function render() {
-  document.getElementById("list").innerHTML = Object.entries(cart)
-    .map(([d, n]) =&gt; `${d} ×${n}&lt;br&gt;`).join("") || "还没点菜";
+// 生成点菜键盘（带数量）
+function menuKeyboard(chatId) {
+  const cart = getCart(chatId);
+  const rows = [];
+  for (const [id, item] of Object.entries(MENU)) {
+    const qty = cart[id] || 0;
+    rows.push([{
+      text: `${item.name} ¥${item.price}${qty ? ' ×' + qty : ''}`,
+      callback_data: 'add:' + id
+    }]);
+  }
+  rows.push([
+    { text: '🧾 下单', callback_data: 'checkout' },
+    { text: '🧹 清空', callback_data: 'clear' },
+  ]);
+  return { inline_keyboard: rows };
 }
 
-async function checkout() {
-  if (!Object.keys(cart).length) return alert("还没点菜!");
-  const text = "🆕 新订单：\n" + Object.entries(cart)
-    .map(([d, n]) =&gt; `${d} ×${n} = ¥${menu[d] * n}`).join("\n");
-  const url = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
-  await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: OWNER_ID, text })
-  });
-  cart = {}; render();
-  alert("✅ 下单成功，已通知老板");
-}
-&lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
+bot.onText(/\/start|\/menu/, (msg) => {
+  bot.sendMessage(msg.chat.id, '🛎️ 欢迎光临！点菜吧：', { reply_markup: menuKeyboard(msg.chat.id) });
+});
+
+bot.on('callback_query', async (q) => {
+  const chatId = q.message.chat.id;
+  const data = q.data;
+  const cart = getCart(chatId);
+
+  if (data.startsWith('add:')) {
+    const id = data.split(':')[1];
+    cart[id] = (cart[id] || 0) + 1;
+    await bot.editMessageReplyMarkup(menuKeyboard(chatId), {
+      chat_id: chatId, message_id: q.message.message_id,
+    });
+  } else if (data === 'clear') {
+    carts[chatId] = {};
+    await bot.editMessageReplyMarkup(menuKeyboard(chatId), {
+      chat_id: chatId, message_id: q.message.message_id,
+    });
+  } else if (data === 'checkout') {
+    const lines = [];
+    let total = 0;
+    for (const [id, qty] of Object.entries(cart)) {
+      const item = MENU[id];
+      if (!item) continue;
+      lines.push(`${item.name} ×${qty} = ¥${item.price * qty}`);
+      total += item.price * qty;
+    }
+    if (!lines.length) {
+      return bot.answerCallbackQuery(q.id, { text: '购物车是空的 🫙', show_alert: true });
+    }
+    const order = lines.join('\n') + `\n\n💰 合计：¥${total}`;
+
+    // 1️⃣ 通知老板
+    const customer = q.from.username ? '@' + q.from.username : q.from.first_name;
+    await bot.sendMessage(BOSS_ID, `🆕 新订单！\n👤 客人：${customer}\n——————\n${order}`);
+
+    // 2️⃣ 给客人回执
+    await bot.answerCallbackQuery(q.id, { text: '下单成功 ✅', show_alert: true });
+    await bot.sendMessage(chatId, `✅ 已下单！\n${order}\n\n稍等，马上给你做 😋`);
+    carts[chatId] = {};
+    await bot.editMessageReplyMarkup(menuKeyboard(chatId), {
+      chat_id: chatId, message_id: q.message.message_id,
+    });
+  }
+});
+
+bot.on('polling_error', (e) => { if (e.message !== 'ECONNRESET') console.log(e.message); });
+console.log('🍽️ 餐厅机器人上线');
