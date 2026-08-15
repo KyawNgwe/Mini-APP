@@ -1,329 +1,553 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>点餐 - 老板私房菜</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-        }
-        body {
-            background: #f7f3ee;
-            padding: 20px 16px 40px;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            font-size: 26px;
-            margin-bottom: 6px;
-            letter-spacing: 2px;
-        }
-        .sub-title {
-            text-align: center;
-            color: #95a5a6;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 14px 18px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
-        .card:active {
-            transform: scale(0.98);
-            background: #fefcf9;
-        }
-        .info h3 {
-            font-size: 17px;
-            color: #2c3e50;
-            font-weight: 600;
-        }
-        .info p {
-            color: #e67e22;
-            font-size: 15px;
-            font-weight: 500;
-            margin-top: 2px;
-        }
-        .qty {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: #f8f5f2;
-            padding: 4px 6px;
-            border-radius: 30px;
-        }
-        .qty button {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 50%;
-            background: #e67e22;
-            color: white;
-            font-size: 20px;
-            font-weight: 300;
-            cursor: pointer;
-            transition: 0.15s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-        }
-        .qty button:active {
-            background: #d35400;
-            transform: scale(0.92);
-        }
-        .qty span {
-            font-size: 18px;
-            font-weight: 600;
-            min-width: 28px;
-            text-align: center;
-            color: #2c3e50;
-        }
-        .total-box {
-            background: #2c3e50;
-            color: white;
-            padding: 16px 20px;
-            border-radius: 16px;
-            margin: 20px 0 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .total-box label {
-            font-size: 16px;
-            opacity: 0.8;
-        }
-        .total-box span {
-            font-size: 28px;
-            font-weight: 700;
-            color: #f1c40f;
-        }
-        .form-group {
-            margin-bottom: 12px;
-        }
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #e0d8d2;
-            border-radius: 12px;
-            font-size: 16px;
-            background: white;
-            transition: 0.2s;
-            outline: none;
-        }
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: #e67e22;
-            box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.15);
-        }
-        .form-group textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
-        .btn-submit {
-            width: 100%;
-            padding: 16px;
-            background: #e67e22;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 20px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-top: 6px;
-            letter-spacing: 2px;
-            box-shadow: 0 4px 14px rgba(230, 126, 34, 0.35);
-        }
-        .btn-submit:active {
-            transform: scale(0.96);
-            background: #d35400;
-        }
-        #status {
-            text-align: center;
-            margin-top: 16px;
-            font-size: 15px;
-            font-weight: 500;
-            min-height: 24px;
-            color: #27ae60;
-        }
-        #status.error {
-            color: #e74c3c;
-        }
-        .clear-btn {
-            text-align: right;
-            margin-top: -8px;
-            margin-bottom: 10px;
-        }
-        .clear-btn button {
-            background: none;
-            border: none;
-            color: #95a5a6;
-            font-size: 13px;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>老灶食堂 · 点餐</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#241C16;
+    --wok:#332821;
+    --wok-2:#3d302a;
+    --parchment:#EFE2C8;
+    --parchment-dim:#cdbf9e;
+    --brick:#B33A2E;
+    --brick-dark:#8c2c22;
+    --scallion:#7A9B57;
+    --gold:#D4A24C;
+    --line: rgba(239,226,200,0.14);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--parchment);
+    font-family:'Noto Sans SC', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  ::selection{ background:var(--brick); color:var(--parchment); }
+
+  /* subtle char texture */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(212,162,76,0.05), transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(179,58,46,0.06), transparent 45%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .app{ position:relative; z-index:1; max-width:560px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;}
+
+  header.top{
+    padding:28px 20px 18px;
+    text-align:center;
+    position:relative;
+  }
+  .brand-seal{
+    width:46px;height:46px;
+    border:2px solid var(--brick);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 10px;
+    color:var(--brick);
+    font-family:'Noto Serif SC',serif;
+    font-weight:900;
+    font-size:18px;
+    transform:rotate(-6deg);
+    opacity:0.9;
+  }
+  h1.title{
+    font-family:'Noto Serif SC', serif;
+    font-weight:900;
+    font-size:30px;
+    margin:0;
+    letter-spacing:2px;
+    color:var(--parchment);
+  }
+  p.tagline{
+    margin:6px 0 0;
+    font-size:12.5px;
+    letter-spacing:3px;
+    color:var(--parchment-dim);
+    text-transform:uppercase;
+  }
+  .divider{
+    width:64px;height:2px;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin:16px auto 0;
+  }
+
+  /* category nav */
+  .cat-nav{
+    display:flex; gap:8px; overflow-x:auto;
+    padding:14px 16px; margin:0 4px;
+    scrollbar-width:none;
+  }
+  .cat-nav::-webkit-scrollbar{display:none;}
+  .cat-chip{
+    flex:0 0 auto;
+    font-family:'Noto Serif SC',serif;
+    font-weight:700;
+    font-size:14px;
+    padding:8px 16px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    color:var(--parchment-dim);
+    background:transparent;
+    cursor:pointer;
+    transition:all .2s ease;
+    white-space:nowrap;
+  }
+  .cat-chip.active{
+    background:var(--brick);
+    border-color:var(--brick);
+    color:#fff;
+  }
+
+  main{ flex:1; padding:4px 16px 140px; }
+
+  .cat-section{ margin-top:22px; }
+  .cat-heading{
+    display:flex; align-items:baseline; gap:10px;
+    margin:0 4px 10px;
+  }
+  .cat-heading .zh{
+    font-family:'Noto Serif SC',serif; font-weight:700; font-size:19px; color:var(--gold);
+  }
+  .cat-heading .en{
+    font-size:10px; letter-spacing:2px; color:var(--parchment-dim); text-transform:uppercase;
+  }
+  .cat-heading::after{
+    content:"";
+    flex:1; height:1px;
+    background:var(--line);
+  }
+
+  .dish{
+    display:flex; align-items:center; gap:14px;
+    padding:14px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .dish-icon{
+    width:52px;height:52px; flex:0 0 auto;
+    border-radius:12px;
+    background:var(--wok-2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;
+    border:1px solid var(--line);
+  }
+  .dish-info{ flex:1; min-width:0; }
+  .dish-name{ font-weight:700; font-size:15.5px; color:var(--parchment); }
+  .dish-desc{ font-size:12px; color:var(--parchment-dim); margin-top:3px; line-height:1.5; }
+  .dish-price{
+    font-family:'JetBrains Mono',monospace; font-weight:600;
+    color:var(--gold); font-size:14px; margin-top:5px;
+  }
+  .dish-price::before{ content:"¥"; font-size:11px; margin-right:1px; opacity:.8;}
+
+  .stepper{ display:flex; align-items:center; gap:0; flex:0 0 auto; }
+  .stepper button{
+    width:30px;height:30px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--wok-2);
+    color:var(--parchment);
+    font-size:16px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:.15s;
+  }
+  .stepper button.add{ background:var(--brick); border-color:var(--brick); color:#fff;}
+  .stepper button:active{ transform:scale(0.9); }
+  .stepper .qty{
+    width:26px; text-align:center; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:14px;
+  }
+  .stepper.zero .minus, .stepper.zero .qty{ display:none; }
+
+  /* cart bar */
+  .cart-bar{
+    position:fixed; left:0; right:0; bottom:0;
+    max-width:560px; margin:0 auto;
+    background:var(--brick);
+    color:#fff;
+    padding:14px 18px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-radius:18px 18px 0 0;
+    box-shadow:0 -8px 28px rgba(0,0,0,0.35);
+    cursor:pointer;
+    transform:translateY(110%);
+    transition:transform .35s cubic-bezier(.2,.9,.3,1.2);
+    z-index:40;
+  }
+  .cart-bar.show{ transform:translateY(0); }
+  .cart-left{ display:flex; align-items:center; gap:12px; }
+  .cart-count{
+    background:rgba(255,255,255,0.2);
+    width:26px;height:26px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px;
+  }
+  .cart-total{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:16px;}
+  .cart-cta{ font-weight:700; font-size:14px; letter-spacing:1px;}
+
+  /* drawer */
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.55);
+    opacity:0; pointer-events:none; transition:opacity .3s;
+    z-index:50;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .drawer{
+    position:fixed; left:0; right:0; bottom:0;
+    max-width:560px; margin:0 auto;
+    background:var(--wok);
+    border-radius:20px 20px 0 0;
+    padding:20px 20px 24px;
+    transform:translateY(100%);
+    transition:transform .35s cubic-bezier(.2,.9,.3,1.1);
+    z-index:51;
+    max-height:82vh;
+    overflow-y:auto;
+  }
+  .drawer.show{ transform:translateY(0); }
+  .drawer-handle{
+    width:36px;height:4px;background:var(--line);border-radius:2px;
+    margin:0 auto 16px;
+  }
+  .drawer h2{
+    font-family:'Noto Serif SC',serif; font-size:19px; margin:0 0 14px; color:var(--parchment);
+  }
+  .cart-item{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0; border-bottom:1px solid var(--line);
+  }
+  .cart-item .name{ font-size:14px; }
+  .cart-item .sub{ font-size:11px; color:var(--parchment-dim); margin-top:2px;}
+  .field{ margin-top:16px; }
+  .field label{ font-size:12px; color:var(--parchment-dim); letter-spacing:1px; }
+  .field input, .field textarea{
+    width:100%; margin-top:6px;
+    background:var(--wok-2); border:1px solid var(--line);
+    border-radius:10px; padding:11px 12px;
+    color:var(--parchment); font-family:inherit; font-size:14px;
+  }
+  .field textarea{ resize:none; height:56px; }
+  .total-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-top:18px; padding-top:14px; border-top:1px dashed var(--line);
+  }
+  .total-row .label{ font-size:13px; color:var(--parchment-dim); }
+  .total-row .amount{ font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:var(--gold);}
+  .submit-btn{
+    width:100%; margin-top:16px;
+    background:var(--brick); color:#fff; border:none;
+    padding:15px; border-radius:12px;
+    font-family:'Noto Serif SC',serif; font-weight:700; font-size:16px;
+    letter-spacing:2px; cursor:pointer;
+  }
+  .submit-btn:disabled{ opacity:.4; }
+  .empty-cart{ text-align:center; color:var(--parchment-dim); padding:30px 0; font-size:13px;}
+
+  /* confirmation stamp */
+  .stamp-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.72);
+    display:flex; align-items:center; justify-content:center;
+    z-index:80; opacity:0; pointer-events:none; transition:opacity .25s;
+  }
+  .stamp-overlay.show{ opacity:1; pointer-events:auto; }
+  .stamp{
+    width:150px;height:150px; border-radius:50%;
+    border:4px solid var(--brick);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:var(--brick); background:rgba(179,58,46,0.06);
+    transform:rotate(-12deg) scale(0.4); opacity:0;
+    transition:transform .5s cubic-bezier(.2,1.4,.4,1), opacity .3s;
+  }
+  .stamp-overlay.show .stamp{ transform:rotate(-12deg) scale(1); opacity:1; }
+  .stamp .big{ font-family:'Noto Serif SC',serif; font-weight:900; font-size:28px; letter-spacing:2px;}
+  .stamp .small{ font-size:10px; letter-spacing:3px; margin-top:6px;}
+  .stamp-caption{
+    position:absolute; bottom:36%; text-align:center; color:var(--parchment); font-size:13px; opacity:0;
+    transition:opacity .4s .3s;
+  }
+  .stamp-overlay.show .stamp-caption{ opacity:1; }
+
+  footer.foot{
+    text-align:center; padding:18px 0 30px; color:var(--parchment-dim); font-size:11px; letter-spacing:1px;
+  }
+  footer.foot a{ color:var(--parchment-dim); text-decoration:none; border-bottom:1px dotted var(--parchment-dim); cursor:pointer; }
+
+  /* ================= ADMIN ================= */
+  .admin-app{ max-width:560px; margin:0 auto; min-height:100vh; padding-bottom:40px; position:relative; z-index:1;}
+  .admin-top{
+    padding:22px 20px 16px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .admin-title{ font-family:'Noto Serif SC',serif; font-weight:900; font-size:20px; display:flex; align-items:center; gap:10px;}
+  .live-dot{ width:8px;height:8px;border-radius:50%; background:var(--scallion); box-shadow:0 0 0 0 rgba(122,155,87,0.6); animation:pulse 2s infinite; }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(122,155,87,0.55);}
+    70%{ box-shadow:0 0 0 8px rgba(122,155,87,0);}
+    100%{ box-shadow:0 0 0 0 rgba(122,155,87,0);}
+  }
+  .back-link{ font-size:12px; color:var(--parchment-dim); cursor:pointer; border-bottom:1px dotted var(--parchment-dim); }
+  .admin-stats{ display:flex; gap:10px; padding:0 20px 16px; }
+  .stat-card{
+    flex:1; background:var(--wok); border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px;
+  }
+  .stat-card .num{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:22px; color:var(--gold);}
+  .stat-card .lbl{ font-size:10.5px; color:var(--parchment-dim); letter-spacing:1px; margin-top:2px;}
+
+  .tickets{ padding:0 20px; display:flex; flex-direction:column; gap:14px;}
+  .ticket{
+    background:var(--wok);
+    border:1px solid var(--line);
+    border-radius:4px 4px 10px 10px;
+    padding:16px 16px 14px;
+    position:relative;
+    animation: dropIn .4s cubic-bezier(.2,.9,.3,1.1);
+  }
+  .ticket.status-new{ border-color:var(--brick); box-shadow:0 0 0 1px rgba(179,58,46,0.35), 0 8px 20px rgba(179,58,46,0.12);}
+  .ticket::before{
+    content:""; position:absolute; top:-1px; left:14px; right:14px; height:6px;
+    background:repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 12px);
+  }
+  @keyframes dropIn{ from{ opacity:0; transform:translateY(-8px);} to{opacity:1; transform:translateY(0);} }
+  .ticket-head{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .ticket-table{ font-family:'Noto Serif SC',serif; font-weight:700; font-size:16px; }
+  .ticket-time{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--parchment-dim); }
+  .ticket-badge{
+    font-size:10px; letter-spacing:1px; padding:3px 9px; border-radius:999px; font-weight:700;
+  }
+  .badge-new{ background:var(--brick); color:#fff; }
+  .badge-preparing{ background:var(--gold); color:var(--ink); }
+  .badge-done{ background:var(--scallion); color:var(--ink); }
+  .ticket-items{ margin:10px 0; font-size:13px; }
+  .ticket-items .row{ display:flex; justify-content:space-between; padding:3px 0; color:var(--parchment-dim); }
+  .ticket-items .row .n{ color:var(--parchment); }
+  .ticket-remark{ font-size:12px; color:var(--gold); margin-top:4px; }
+  .ticket-foot{ display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px dashed var(--line);}
+  .ticket-total{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--gold);}
+  .ticket-actions button{
+    border:none; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;
+    margin-left:8px;
+  }
+  .btn-prep{ background:var(--gold); color:var(--ink); }
+  .btn-done{ background:var(--scallion); color:var(--ink); }
+  .empty-admin{ text-align:center; padding:60px 20px; color:var(--parchment-dim); font-size:13px; }
+
+  /* passcode gate */
+  .gate{
+    position:fixed; inset:0; background:var(--ink); z-index:100;
+    display:flex; align-items:center; justify-content:center; flex-direction:column; padding:20px;
+  }
+  .gate .brand-seal{ margin-bottom:18px; }
+  .gate h2{ font-family:'Noto Serif SC',serif; margin:0 0 4px; }
+  .gate p{ font-size:12px; color:var(--parchment-dim); margin:0 0 20px; }
+  .gate input{
+    background:var(--wok-2); border:1px solid var(--line); color:var(--parchment);
+    padding:12px 16px; border-radius:10px; text-align:center; letter-spacing:6px;
+    font-family:'JetBrains Mono',monospace; font-size:18px; width:180px;
+  }
+  .gate button{
+    margin-top:14px; background:var(--brick); color:#fff; border:none;
+    padding:11px 30px; border-radius:10px; font-weight:700; cursor:pointer;
+  }
+  .gate .err{ color:var(--brick); font-size:12px; margin-top:10px; height:14px; }
+  .gate .hint{ margin-top:18px; font-size:11px; color:var(--parchment-dim); opacity:.6; }
+
+  .toast{
+    position:fixed; top:18px; left:50%; transform:translateX(-50%) translateY(-40px);
+    background:var(--scallion); color:var(--ink); font-weight:700; font-size:13px;
+    padding:10px 18px; border-radius:999px; z-index:90; opacity:0; transition:all .35s;
+    white-space:nowrap;
+  }
+  .toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🍜 老板私房菜</h1>
-    <p class="sub-title">✨ 点餐后老板将立即收到通知</p>
-
-    <!-- 菜品列表由 JS 动态渲染 -->
-    <div id="menu"></div>
-
-    <!-- 合计 -->
-    <div class="total-box">
-        <label>💰 合计</label>
-        <span id="totalPrice">0</span>
-    </div>
-
-    <!-- 顾客信息 -->
-    <div class="form-group">
-        <input id="customer" placeholder="👤 您的称呼（必填）" />
-    </div>
-    <div class="form-group">
-        <input id="phone" placeholder="📞 手机号（选填，方便联系）" />
-    </div>
-    <div class="form-group">
-        <textarea id="address" placeholder="📍 送餐地址（选填，自取可留空）" rows="2"></textarea>
-    </div>
-
-    <button class="btn-submit" onclick="submitOrder()">✅ 立即下单</button>
-    <div id="status"></div>
-</div>
+<div id="root"></div>
 
 <script>
-    // ======= 从后端注入菜单数据 =======
-    const menu = {{ menu|tojson }};
-    // ================================
+(function(){
+  "use strict";
 
-    // 购物车对象 { 菜品id: 数量 }
-    const cart = {};
+  /* ---------------- data ---------------- */
+  var MENU = [
+    { cat:"招牌菜", en:"Signature", items:[
+      {id:"d1", name:"老灶回锅肉", desc:"二刀肉 · 青蒜 · 郫县豆瓣", price:38, icon:"🥩"},
+      {id:"d2", name:"农家小炒黄牛肉", desc:"黄牛肉 · 野山椒 · 香芹", price:52, icon:"🐂"},
+      {id:"d3", name:"柴火大盘鸡", desc:"土鸡 · 土豆 · 手擀面", price:68, icon:"🐔"},
+    ]},
+    { cat:"家常菜", en:"Home-style", items:[
+      {id:"d4", name:"干煸豆角", desc:"豇豆 · 肉末 · 花椒", price:24, icon:"🫛"},
+      {id:"d5", name:"麻婆豆腐", desc:"嫩豆腐 · 牛肉末 · 花椒油", price:22, icon:"🧊"},
+      {id:"d6", name:"农家蒜苔炒肉", desc:"蒜苔 · 五花肉", price:26, icon:"🥬"},
+      {id:"d7", name:"酸菜鱼", desc:"草鱼片 · 老坛酸菜", price:58, icon:"🐟"},
+    ]},
+    { cat:"汤羹", en:"Soups", items:[
+      {id:"d8", name:"老鸭冬瓜汤", desc:"土鸭 · 冬瓜 · 慢炖三小时", price:36, icon:"🍲"},
+      {id:"d9", name:"番茄蛋汤", desc:"农家番茄 · 土鸡蛋", price:16, icon:"🍅"},
+    ]},
+    { cat:"主食", en:"Staples", items:[
+      {id:"d10", name:"柴火米饭", desc:"当季新米", price:3, icon:"🍚"},
+      {id:"d11", name:"手工葱花饼", desc:"现烙 · 现切", price:12, icon:"🥞"},
+    ]},
+    { cat:"饮品", en:"Drinks", items:[
+      {id:"d12", name:"自酿酸梅汤", desc:"乌梅 · 山楂 · 冰镇", price:10, icon:"🥤"},
+      {id:"d13", name:"鲜榨橙汁", desc:"当季鲜橙", price:14, icon:"🍊"},
+    ]},
+  ];
 
-    // 渲染菜单和总价
-    function render() {
-        let html = '';
-        menu.forEach(item => {
-            const qty = cart[item.id] || 0;
-            html += `
-                <div class="card">
-                    <div class="info">
-                        <h3>${item.name}</h3>
-                        <p>¥${item.price}</p>
-                    </div>
-                    <div class="qty">
-                        <button onclick="changeQty(${item.id}, -1)">−</button>
-                        <span>${qty}</span>
-                        <button onclick="changeQty(${item.id}, 1)">+</button>
-                    </div>
-                </div>
-            `;
-        });
-        document.getElementById('menu').innerHTML = html;
+  var STATUS_LABEL = { "new":"新订单", "preparing":"制作中", "done":"已完成" };
 
-        // 计算总价
-        let total = 0;
-        for (let id in cart) {
-            const item = menu.find(m => m.id == id);
-            if (item) total += cart[id] * item.price;
-        }
-        document.getElementById('totalPrice').innerText = total;
+  /* ---------------- helpers ---------------- */
+  function el(tag, attrs, children){
+    var e = document.createElement(tag);
+    attrs = attrs || {};
+    for(var k in attrs){
+      if(k === "class") e.className = attrs[k];
+      else if(k === "html") e.innerHTML = attrs[k];
+      else if(k.indexOf("on") === 0) e.addEventListener(k.slice(2), attrs[k]);
+      else e.setAttribute(k, attrs[k]);
     }
+    (children||[]).forEach(function(c){
+      if(c === null || c === undefined) return;
+      if(typeof c === "string") e.appendChild(document.createTextNode(c));
+      else e.appendChild(c);
+    });
+    return e;
+  }
+  function fmtTime(ts){
+    var d = new Date(ts);
+    var h = d.getHours().toString().padStart(2,"0");
+    var m = d.getMinutes().toString().padStart(2,"0");
+    return h+":"+m;
+  }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
-    // 修改数量
-    function changeQty(id, delta) {
-        if (!cart[id]) cart[id] = 0;
-        const newQty = cart[id] + delta;
-        if (newQty <= 0) {
-            delete cart[id];
-        } else {
-            cart[id] = newQty;
-        }
-        render();
+  async function storageSet(key, value, shared){
+    try{ return await window.storage.set(key, value, !!shared); }
+    catch(e){ console.error("storage set failed", e); return null; }
+  }
+  async function storageGet(key, shared){
+    try{ return await window.storage.get(key, !!shared); }
+    catch(e){ return null; }
+  }
+  async function storageList(prefix, shared){
+    try{ return await window.storage.list(prefix, !!shared); }
+    catch(e){ return null; }
+  }
+
+  /* ---------------- state ---------------- */
+  var state = {
+    view: "customer", // customer | admin
+    activeCat: MENU[0].cat,
+    cart: {}, // id -> qty
+    drawerOpen: false,
+    table: "",
+    remark: "",
+    submitting: false,
+    adminUnlocked: false,
+    adminOrders: [],
+    knownOrderIds: {}
+  };
+
+  var root = document.getElementById("root");
+
+  function render(){
+    root.innerHTML = "";
+    if(state.view === "customer"){
+      root.appendChild(renderCustomer());
+    } else {
+      if(!state.adminUnlocked){
+        root.appendChild(renderGate());
+      } else {
+        root.appendChild(renderAdmin());
+      }
     }
+  }
 
-    // 提交订单
-    async function submitOrder() {
-        const items = Object.keys(cart).map(id => {
-            const item = menu.find(m => m.id == id);
-            return { id, name: item.name, price: item.price, quantity: cart[id] };
-        });
-
-        if (items.length === 0) {
-            alert('🥺 请至少选一道菜再下单哦！');
-            return;
-        }
-
-        const customer = document.getElementById('customer').value.trim();
-        if (!customer) {
-            alert('👤 请留下您的称呼，方便老板联系您～');
-            document.getElementById('customer').focus();
-            return;
-        }
-
-        const payload = {
-            customer: customer,
-            phone: document.getElementById('phone').value.trim() || '未填写',
-            address: document.getElementById('address').value.trim() || '自取',
-            items: items
-        };
-
-        const statusEl = document.getElementById('status');
-        statusEl.className = '';
-        statusEl.innerText = '⏳ 订单提交中，请稍候...';
-
-        try {
-            const res = await fetch('/order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const result = await res.json();
-
-            if (result.status === 'success') {
-                statusEl.className = '';
-                statusEl.innerText = '✅ 下单成功！老板已收到通知，稍后联系您～';
-                // 清空购物车和信息（地址和手机保留方便连续点单）
-                for (let id in cart) delete cart[id];
-                render();
-                document.getElementById('customer').value = '';
-                // 可选清空手机和地址，看喜好，这里保留方便老顾客
-                // document.getElementById('phone').value = '';
-                // document.getElementById('address').value = '';
-            } else {
-                statusEl.className = 'error';
-                statusEl.innerText = '❌ 下单失败，请重试 (错误: ' + (result.msg || '网络异常') + ')';
-            }
-        } catch (e) {
-            statusEl.className = 'error';
-            statusEl.innerText = '❌ 网络连接失败，请检查网络后重试';
-            console.error(e);
-        }
+  /* ================= CUSTOMER VIEW ================= */
+  function cartCount(){
+    var c = 0;
+    for(var id in state.cart) c += state.cart[id];
+    return c;
+  }
+  function cartTotal(){
+    var total = 0;
+    for(var id in state.cart){
+      var dish = findDish(id);
+      if(dish) total += dish.price * state.cart[id];
     }
+    return total;
+  }
+  function findDish(id){
+    for(var i=0;i<MENU.length;i++){
+      for(var j=0;j<MENU[i].items.length;j++){
+        if(MENU[i].items[j].id === id) return MENU[i].items[j];
+      }
+    }
+    return null;
+  }
 
-    // 初始化渲染
-    render();
-</script>
+  function renderCustomer(){
+    var wrap = el("div", {class:"app"});
 
-</body>
-</html
+    wrap.appendChild(el("header", {class:"top"}, [
+      el("div", {class:"brand-seal"}, ["灶"]),
+      el("h1", {class:"title"}, ["老灶食堂"]),
+      el("p", {class:"tagline"}, ["OLD STOVE CANTEEN · 柴火慢做"]),
+      el("div", {class:"divider"})
+    ]));
+
+    // category nav
+    var nav = el("nav", {class:"cat-nav"});
+    MENU.forEach(function(section){
+      var chip = el("button", {
+        class: "cat-chip" + (state.activeCat === section.cat ? " active" : ""),
+        onclick: function(){
+          state.activeCat = section.cat;
+          document.getElementById("sec-"+section.cat).scrollIntoView({behavior:"smooth", block:"start"});
+        }
+      }, [section.cat]);
+      nav.appendChild(chip);
+    });
+    wrap.appendChild(nav);
+
+    var main = el("main", {});
+    MENU.forEach(function(section){
+      var sec = el("section", {class:"cat-section", id:"sec-"+section.cat});
+      sec.appendChild(el("div", {class:"cat-heading"}, [
+        el("span", {class:"zh"}, [section.cat]),
+        el("span", {class:"en"}, [section.en])
+      ]));
+      section.items.forEach(function(dish){
+        sec.appendChild(renderDishRow(dish));
+      });
+      main.appendChild(sec);
+    });
+    wrap.appendChild(main);
+
+    // cart bar
+    var count = cartCount();
+    var bar = el("div", {
+      class: "cart-bar" + (count > 0 ? " show" : ""),
+      onclick: function(){ state.drawerOpen = true; render(); }
+    }, [
+      el("div", {class:"cart-left"}, [
+        el("div", {class:"cart-count"}, [String(count)]),
+        el("div", {class:"cart-total"}, ["¥" + cartTotal()])
+      ]),
+      el("div", {class:"cart-cta"}, ["去下单 →"])
+    ]);
+    wrap.appendChild(bar);
+
+    // overlay + drawer
+    if(state.drawerOpen){
