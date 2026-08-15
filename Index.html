@@ -1,1 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Shop</title>
 
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  margin: 0;
+  padding: 20px;
+}
+h1 {
+  text-align: center;
+}
+.product {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  text-align: center;
+}
+.price {
+  font-size: 22px;
+  font-weight: bold;
+}
+button {
+  background: #0088cc;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🛒 My Shop</h1>
+
+<div class="product">
+  <h2>လက်ထိတ်</h2>
+  <p class="price">500 ฿</p>
+  <button onclick="order()">🛒 Order Now</button>
+</div>
+
+<script>
+function order() {
+  alert("Order received!");
+}
+</script>
+
+</body>
+</html>
