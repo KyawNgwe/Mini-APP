@@ -551,3 +551,323 @@
 
     // overlay + drawer
     if(state.drawerOpen){
+      wrap.appendChild(el("div", {class:"overlay show", onclick:function(){ state.drawerOpen=false; render(); }}));
+      wrap.appendChild(renderDrawer());
+    }
+
+    wrap.appendChild(el("footer", {class:"foot"}, [
+      "老灶食堂 · 现点现做，请耐心等待  ·  ",
+      el("a", {onclick:function(){ state.view="admin"; render(); }}, ["后厨接单"])
+    ]));
+
+    wrap.appendChild(el("div", {class:"stamp-overlay", id:"stampOverlay"}, [
+      el("div", {class:"stamp-caption"}, ["订单已送达后厨"]),
+      el("div", {class:"stamp"}, [
+        el("div", {class:"big"}, ["已下单"]),
+        el("div", {class:"small"}, ["CONFIRMED"])
+      ])
+    ]));
+
+    return wrap;
+  }
+
+  function renderDishRow(dish){
+    var qty = state.cart[dish.id] || 0;
+    var stepper = el("div", {class:"stepper" + (qty === 0 ? " zero" : "")}, [
+      el("button", {class:"minus", onclick:function(){
+        if(state.cart[dish.id] > 1) state.cart[dish.id]--;
+        else delete state.cart[dish.id];
+        render();
+      }}, ["−"]),
+      el("div", {class:"qty"}, [String(qty)]),
+      el("button", {class:"add", onclick:function(){
+        state.cart[dish.id] = (state.cart[dish.id]||0) + 1;
+        render();
+      }}, ["+"])
+    ]);
+
+    return el("div", {class:"dish"}, [
+      el("div", {class:"dish-icon"}, [dish.icon]),
+      el("div", {class:"dish-info"}, [
+        el("div", {class:"dish-name"}, [dish.name]),
+        el("div", {class:"dish-desc"}, [dish.desc]),
+        el("div", {class:"dish-price"}, [String(dish.price)])
+      ]),
+      stepper
+    ]);
+  }
+
+  function renderDrawer(){
+    var items = Object.keys(state.cart);
+    var body;
+    if(items.length === 0){
+      body = el("div", {class:"empty-cart"}, ["购物车是空的，去挑几道菜吧"]);
+    } else {
+      body = el("div", {}, items.map(function(id){
+        var dish = findDish(id);
+        var qty = state.cart[id];
+        return el("div", {class:"cart-item"}, [
+          el("div", {}, [
+            el("div", {class:"name"}, [dish.name]),
+            el("div", {class:"sub"}, ["¥"+dish.price+" × "+qty])
+          ]),
+          el("div", {style:"font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--gold);"}, ["¥"+(dish.price*qty)])
+        ]);
+      }));
+    }
+
+    var canSubmit = items.length > 0 && state.table.trim().length > 0 && !state.submitting;
+
+    var drawer = el("div", {class:"drawer show"}, [
+      el("div", {class:"drawer-handle"}),
+      el("h2", {}, ["确认订单"]),
+      body,
+      el("div", {class:"field"}, [
+        el("label", {}, ["桌号 / 取餐姓名"]),
+        el("input", {
+          type:"text", placeholder:"例如：8号桌 或 王先生",
+          value: state.table,
+          oninput: function(e){ state.table = e.target.value; syncSubmitButton(); }
+        })
+      ]),
+      el("div", {class:"field"}, [
+        el("label", {}, ["备注（口味 / 忌口，选填）"]),
+        el("textarea", {
+          placeholder:"例如：不要香菜，微辣",
+          oninput: function(e){ state.remark = e.target.value; }
+        }, [state.remark])
+      ]),
+      el("div", {class:"total-row"}, [
+        el("div", {class:"label"}, ["合计"]),
+        el("div", {class:"amount"}, ["¥"+cartTotal()])
+      ]),
+      el("button", {
+        class:"submit-btn", id:"submitBtn",
+        disabled: !canSubmit,
+        onclick: submitOrder
+      }, [state.submitting ? "提交中…" : "确认下单"])
+    ]);
+    return drawer;
+  }
+
+  function syncSubmitButton(){
+    var btn = document.getElementById("submitBtn");
+    if(!btn) return;
+    var items = Object.keys(state.cart);
+    btn.disabled = !(items.length > 0 && state.table.trim().length > 0 && !state.submitting);
+  }
+
+  async function submitOrder(){
+    if(state.submitting) return;
+    state.submitting = true;
+    syncSubmitButton();
+
+    var items = Object.keys(state.cart).map(function(id){
+      var dish = findDish(id);
+      return { name: dish.name, price: dish.price, qty: state.cart[id] };
+    });
+    var order = {
+      id: uid(),
+      table: state.table.trim(),
+      remark: state.remark.trim(),
+      items: items,
+      total: cartTotal(),
+      time: Date.now(),
+      status: "new"
+    };
+
+    await storageSet("orders:" + order.id, JSON.stringify(order), true);
+
+    // reset + show stamp
+    state.cart = {};
+    state.table = "";
+    state.remark = "";
+    state.submitting = false;
+    state.drawerOpen = false;
+    render();
+
+    var overlay = document.getElementById("stampOverlay");
+    if(overlay){
+      overlay.classList.add("show");
+      setTimeout(function(){ overlay.classList.remove("show"); }, 1600);
+    }
+  }
+
+  /* ================= ADMIN VIEW ================= */
+  var ADMIN_CODE = "0000";
+  var pollTimer = null;
+  var notifyPermissionAsked = false;
+
+  function renderGate(){
+    var wrap = el("div", {class:"gate"});
+    var err = null;
+    wrap.appendChild(el("div", {class:"brand-seal"}, ["灶"]));
+    wrap.appendChild(el("h2", {}, ["后厨接单台"]));
+    wrap.appendChild(el("p", {}, ["请输入管理员口令"]));
+    var input = el("input", {type:"password", maxlength:"4", inputmode:"numeric", placeholder:"····"});
+    var errBox = el("div", {class:"err"}, [""]);
+    wrap.appendChild(input);
+    wrap.appendChild(el("div", {}, [
+      el("button", {onclick: function(){
+        if(input.value === ADMIN_CODE){
+          state.adminUnlocked = true;
+          render();
+          startPolling();
+        } else {
+          errBox.textContent = "口令错误，请重试";
+          input.value = "";
+        }
+      }}, ["进入"])
+    ]));
+    wrap.appendChild(errBox);
+    wrap.appendChild(el("div", {class:"hint"}, ["默认口令 0000（可在代码中修改） · "]));
+    wrap.appendChild(el("a", {class:"back-link", onclick:function(){ state.view="customer"; render(); }}, ["返回点餐"]));
+    setTimeout(function(){ input.focus(); }, 50);
+    return wrap;
+  }
+
+  function renderAdmin(){
+    var wrap = el("div", {class:"admin-app"});
+    var newCount = state.adminOrders.filter(function(o){ return o.status === "new"; }).length;
+    var prepCount = state.adminOrders.filter(function(o){ return o.status === "preparing"; }).length;
+    var todayTotal = state.adminOrders.reduce(function(s,o){ return s + o.total; }, 0);
+
+    wrap.appendChild(el("div", {class:"admin-top"}, [
+      el("div", {class:"admin-title"}, [el("span",{class:"live-dot"}), "后厨接单台"]),
+      el("a", {class:"back-link", onclick:function(){ stopPolling(); state.view="customer"; render(); }}, ["返回点餐 →"])
+    ]));
+
+    wrap.appendChild(el("div", {class:"admin-stats"}, [
+      el("div", {class:"stat-card"}, [el("div",{class:"num"},[String(newCount)]), el("div",{class:"lbl"},["新订单"])]),
+      el("div", {class:"stat-card"}, [el("div",{class:"num"},[String(prepCount)]), el("div",{class:"lbl"},["制作中"])]),
+      el("div", {class:"stat-card"}, [el("div",{class:"num"},["¥"+todayTotal]), el("div",{class:"lbl"},["累计金额"])]),
+    ]));
+
+    var ticketsWrap = el("div", {class:"tickets"});
+    var sorted = state.adminOrders.slice().sort(function(a,b){ return b.time - a.time; });
+    if(sorted.length === 0){
+      ticketsWrap.appendChild(el("div", {class:"empty-admin"}, ["暂无订单，等待客人下单中…"]));
+    } else {
+      sorted.forEach(function(order){
+        ticketsWrap.appendChild(renderTicket(order));
+      });
+    }
+    wrap.appendChild(ticketsWrap);
+
+    wrap.appendChild(el("div", {class:"toast", id:"adminToast"}, ["🔔 收到新订单"]));
+
+    return wrap;
+  }
+
+  function renderTicket(order){
+    var itemsWrap = el("div", {class:"ticket-items"}, order.items.map(function(it){
+      return el("div", {class:"row"}, [
+        el("span", {class:"n"}, [it.name + " ×" + it.qty]),
+        el("span", {}, ["¥" + (it.price*it.qty)])
+      ]);
+    }));
+
+    var actions = el("div", {class:"ticket-actions"});
+    if(order.status === "new"){
+      actions.appendChild(el("button", {class:"btn-prep", onclick:function(){ updateOrderStatus(order, "preparing"); }}, ["开始制作"]));
+    } else if(order.status === "preparing"){
+      actions.appendChild(el("button", {class:"btn-done", onclick:function(){ updateOrderStatus(order, "done"); }}, ["完成出餐"]));
+    }
+
+    var badgeClass = "badge-" + order.status;
+
+    return el("div", {class:"ticket status-" + order.status}, [
+      el("div", {class:"ticket-head"}, [
+        el("div", {}, [
+          el("div", {class:"ticket-table"}, [order.table]),
+          el("div", {class:"ticket-time"}, [fmtTime(order.time)])
+        ]),
+        el("div", {class:"ticket-badge " + badgeClass}, [STATUS_LABEL[order.status]])
+      ]),
+      itemsWrap,
+      order.remark ? el("div", {class:"ticket-remark"}, ["备注：" + order.remark]) : null,
+      el("div", {class:"ticket-foot"}, [
+        el("div", {class:"ticket-total"}, ["¥" + order.total]),
+        actions
+      ])
+    ]);
+  }
+
+  async function updateOrderStatus(order, newStatus){
+    order.status = newStatus;
+    await storageSet("orders:" + order.id, JSON.stringify(order), true);
+    render();
+  }
+
+  async function fetchOrders(){
+    var listResult = await storageList("orders:", true);
+    if(!listResult || !listResult.keys) return;
+    var keys = listResult.keys;
+    var results = await Promise.all(keys.map(function(k){ return storageGet(k, true); }));
+    var orders = [];
+    var freshNewOrders = [];
+    results.forEach(function(r){
+      if(!r || !r.value) return;
+      try{
+        var order = JSON.parse(r.value);
+        orders.push(order);
+        if(!state.knownOrderIds[order.id]){
+          state.knownOrderIds[order.id] = true;
+          if(order.status === "new") freshNewOrders.push(order);
+        }
+      } catch(e){}
+    });
+    state.adminOrders = orders;
+
+    if(freshNewOrders.length > 0 && state.view === "admin" && state.adminUnlocked){
+      notifyNewOrders(freshNewOrders);
+    }
+    render();
+  }
+
+  function notifyNewOrders(orders){
+    var toast = document.getElementById("adminToast");
+    if(toast){
+      var label = orders.length === 1
+        ? ("🔔 新订单 · " + orders[0].table)
+        : ("🔔 " + orders.length + " 个新订单");
+      toast.textContent = label;
+      toast.classList.add("show");
+      setTimeout(function(){ toast.classList.remove("show"); }, 3000);
+    }
+    if("Notification" in window){
+      if(Notification.permission === "granted"){
+        orders.forEach(function(o){
+          try{
+            new Notification("老灶食堂 · 新订单", {
+              body: o.table + " · ¥" + o.total + (o.remark ? " · " + o.remark : ""),
+              tag: o.id
+            });
+          } catch(e){}
+        });
+      } else if(Notification.permission !== "denied" && !notifyPermissionAsked){
+        notifyPermissionAsked = true;
+        Notification.requestPermission();
+      }
+    }
+    if(navigator.vibrate){ navigator.vibrate([80,40,80]); }
+  }
+
+  function startPolling(){
+    fetchOrders();
+    if(pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(fetchOrders, 4000);
+    if("Notification" in window && Notification.permission === "default" && !notifyPermissionAsked){
+      notifyPermissionAsked = true;
+      Notification.requestPermission();
+    }
+  }
+  function stopPolling(){
+    if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
