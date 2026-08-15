@@ -182,12 +182,12 @@ async function sendOrder() {
   message += "%0A💰 总计：฿" + total;
 
   // 修改这里
-  const BOT_TOKEN = "YOUR_BOT_TOKEN";
-  const CHAT_ID = "YOUR_CHAT_ID";
+  const BOT_TOKEN = "8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk";
+  const CHAT_ID = "1949334561";
 
   const url =
-    `8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk` +
-    `?chat_id=${1949334561}&text=${message}`;
+    `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage` +
+    `?chat_id=${CHAT_ID}&text=${message}`;
 
   try {
 
