@@ -1,93 +1,63 @@
 html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小宇餐厅 · 在线点餐</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { font-family: system-ui, -apple-system, sans-serif; max-width: 480px; margin: 0 auto; padding: 16px 12px 120px; background: #faf6f0; }
+  h1 { text-align: center; color: #b3541e; margin-bottom: 4px; }
+  .sub { text-align: center; color: #999; font-size: 13px; margin-bottom: 16px; }
+  .dish { background: #fff; border-radius: 12px; padding: 12px 14px; margin: 8px 0; box-shadow: 0 1px 4px rgba(0,0,0,.08); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .dish .name { font-weight: 700; font-size: 16px; }
+  .dish .desc { color: #999; font-size: 13px; margin-top: 2px; }
+  .dish .price { color: #d33; font-weight: 800; white-space: nowrap; }
+  .dish .qty { color: #b3541e; font-weight: 700; font-size: 14px; min-width: 24px; text-align: center; }
+  .dish button { border: none; border-radius: 10px; padding: 8px 14px; font-size: 16px; cursor: pointer; background: #ffd9a0; }
+  .dish button:active { transform: scale(.94); }
+  .cart { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -3px 14px rgba(0,0,0,.12); }
+  .cart-inner { max-width: 456px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+  .cart .total { font-size: 14px; color: #666; flex: 1; }
+  .cart .total b { color: #d33; font-size: 20px; }
+  .checkout { background: #e05a00; color: #fff; border: none; border-radius: 12px; padding: 13px 22px; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .checkout:disabled { background: #ccc; cursor: not-allowed; }
+  #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.82); color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 99; }
+  #toast.show { opacity: 1; }
+</style>
+</head>
+<body>
 
-const TelegramBot = require('node-telegram-bot-api');
-const token = '8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk';
-const bot = new TelegramBot(token, { polling: true });
+🍜 小宇餐厅
+点好菜，老板马上收到
 
-// ===== 配置：老板的 chat id（怎么拿，看下面注释）=====
-const BOSS_ID = 1949334561; // ⬅️ 改成老板的ID
+    已选 0 样
+合计 ¥0
 
-// 菜单：id -> 名称和价格
-const MENU = {
-  burger: { name: '🍔 牛肉堡', price: 15 },
-  fries:  { name: '🍟 薯条',   price: 8 },
-  cola:   { name: '🥤 可乐',   price: 5 },
-  salad:  { name: '🥗 沙拉',   price: 12 },
-};
+    <button class="checkout" id="checkout" disabled>🛎️ 下单</button>
 
-// 每个客人的购物车: chatId -> { 菜品id: 数量 }
-const carts = {};
+<script>
+// ============ ① 配置区（必改） ============
+const BOT_TOKEN = '123456:你的BOT_TOKEN'; // 从 BotFather 拿
+const BOSS_ID   = 123456789;              // 老板的 chat id（怎么拿看下面注释）
 
-function getCart(chatId) {
-  if (!carts[chatId]) carts[chatId] = {};
-  return carts[chatId];
-}
+// ② 菜单：想加菜就在这加一行
+const MENU = [
+  { id: 'd1', name: '🍔 牛肉堡',   desc: '双层牛肉，芝士拉丝', price: 15 },
+  { id: 'd2', name: '🍟 薯条',     desc: '脆脆的，配番茄酱',   price: 8  },
+  { id: 'd3', name: '🥗 沙拉',     desc: '清爽低卡',           price: 12 },
+  { id: 'd4', name: '🥤 可乐',     desc: '冰镇，加冰免费',     price: 5  },
+  { id: 'd5', name: '🍕 披萨',     desc: '9寸，料多到犯规',    price: 25 },
+];
 
-// 生成点菜键盘（带数量）
-function menuKeyboard(chatId) {
-  const cart = getCart(chatId);
-  const rows = [];
-  for (const [id, item] of Object.entries(MENU)) {
-    const qty = cart[id] || 0;
-    rows.push([{
-      text: `${item.name} ¥${item.price}${qty ? ' ×' + qty : ''}`,
-      callback_data: 'add:' + id
-    }]);
-  }
-  rows.push([
-    { text: '🧾 下单', callback_data: 'checkout' },
-    { text: '🧹 清空', callback_data: 'clear' },
-  ]);
-  return { inline_keyboard: rows };
-}
+// ============ 逻辑区（不用动） ============
+const cart = {}; // { 菜品id: 数量 }
 
-bot.onText(/\/start|\/menu/, (msg) => {
-  bot.sendMessage(msg.chat.id, '🛎️ 欢迎光临！点菜吧：', { reply_markup: menuKeyboard(msg.chat.id) });
-});
+function render() {
+  const menuEl = document.getElementById('menu');
+  menuEl.innerHTML = MENU.map(d => `
 
-bot.on('callback_query', async (q) => {
-  const chatId = q.message.chat.id;
-  const data = q.data;
-  const cart = getCart(chatId);
+        ${d.name}
 
-  if (data.startsWith('add:')) {
-    const id = data.split(':')[1];
-    cart[id] = (cart[id] || 0) + 1;
-    await bot.editMessageReplyMarkup(menuKeyboard(chatId), {
-      chat_id: chatId, message_id: q.message.message_id,
-    });
-  } else if (data === 'clear') {
-    carts[chatId] = {};
-    await bot.editMessageReplyMarkup(menuKeyboard(chatId), {
-      chat_id: chatId, message_id: q.message.message_id,
-    });
-  } else if (data === 'checkout') {
-    const lines = [];
-    let total = 0;
-    for (const [id, qty] of Object.entries(cart)) {
-      const item = MENU[id];
-      if (!item) continue;
-      lines.push(`${item.name} ×${qty} = ¥${item.price * qty}`);
-      total += item.price * qty;
-    }
-    if (!lines.length) {
-      return bot.answerCallbackQuery(q.id, { text: '购物车是空的 🫙', show_alert: true });
-    }
-    const order = lines.join('\n') + `\n\n💰 合计：¥${total}`;
-
-    // 1️⃣ 通知老板
-    const customer = q.from.username ? '@' + q.from.username : q.from.first_name;
-    await bot.sendMessage(BOSS_ID, `🆕 新订单！\n👤 客人：${customer}\n——————\n${order}`);
-
-    // 2️⃣ 给客人回执
-    await bot.answerCallbackQuery(q.id, { text: '下单成功 ✅', show_alert: true });
-    await bot.sendMessage(chatId, `✅ 已下单！\n${order}\n\n稍等，马上给你做 😋`);
-    carts[chatId] = {};
-    await bot.editMessageReplyMarkup(menuKeyboard(chatId), {
-      chat_id: chatId, message_id: q.message.message_id,
-    });
-  }
-});
-
-bot.on('polling_error', (e) => { if (e.message !== 'ECONNRESET') console.log(e.message); });
-console.log('🍽️ 餐厅机器人上线');
+        ${d.desc}
