@@ -8,8 +8,8 @@ from datetime import datetime
 app = Flask(__name__)
 
 # ==================== 配置区域（必填）====================
-TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN"   # 替换为 @BotFather 给你的 Token
-TELEGRAM_CHAT_ID = "YOUR_CHAT_ID"       # 替换为你的用户 ID（或群组 ID）
+TELEGRAM_BOT_TOKEN = "8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk"   # 替换为 @BotFather 给你的 Token
+TELEGRAM_CHAT_ID = "1949334561"       # 替换为你的用户 ID（或群组 ID）
 # =======================================================
 
 # ---------- Telegram 发送函数 ----------
