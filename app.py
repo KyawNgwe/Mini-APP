@@ -11,8 +11,8 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
 # 从环境变量读取配置
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")  # 接收通知的群组或用户ID
+BOT_TOKEN = os.getenv("8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk")
+TELEGRAM_CHAT_ID = os.getenv("1949334561")  # 接收通知的群组或用户ID
 
 bot = Bot(token=BOT_TOKEN)
 dispatcher = Dispatcher(bot, None, use_context=True)
