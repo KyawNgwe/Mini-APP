@@ -1,0 +1,60 @@
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh"&gt;
+&lt;head&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+&lt;title&gt;🍜 点餐菜单&lt;/title&gt;
+&lt;style&gt;
+  body { font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 16px; }
+  .dish { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; }
+  button { background: #ff6b35; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 16px; }
+  #cart { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 12px; box-shadow: 0 -2px 8px rgba(0,0,0,.1); }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h2&gt;🍜 本店菜单&lt;/h2&gt;
+&lt;div id="menu"&gt;&lt;/div&gt;
+&lt;div id="cart"&gt;
+  &lt;div id="list"&gt;&lt;/div&gt;
+  &lt;button onclick="checkout()"&gt;✅ 下单&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+const TOKEN = "8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk"; // 👈 你的 token
+const OWNER_ID = "1949334561"; // 👈 老板 chat_id
+
+const menu = { "🍜 牛肉面": 25, "🥟 饺子": 18, "🍚 炒饭": 15 };
+let cart = {};
+
+// 渲染菜单
+for (const [dish, price] of Object.entries(menu)) {
+  document.getElementById("menu").innerHTML +=
+    `&lt;div class="dish"&gt;&lt;span&gt;${dish} ¥${price}&lt;/span&gt;
+     &lt;button onclick="add('${dish}')"&gt;＋&lt;/button&gt;&lt;/div&gt;`;
+}
+
+function add(dish) {
+  cart[dish] = (cart[dish] || 0) + 1;
+  render();
+}
+function render() {
+  document.getElementById("list").innerHTML = Object.entries(cart)
+    .map(([d, n]) =&gt; `${d} ×${n}&lt;br&gt;`).join("") || "还没点菜";
+}
+
+async function checkout() {
+  if (!Object.keys(cart).length) return alert("还没点菜!");
+  const text = "🆕 新订单：\n" + Object.entries(cart)
+    .map(([d, n]) =&gt; `${d} ×${n} = ¥${menu[d] * n}`).join("\n");
+  const url = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
+  await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: OWNER_ID, text })
+  });
+  cart = {}; render();
+  alert("✅ 下单成功，已通知老板");
+}
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
