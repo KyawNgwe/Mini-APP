@@ -1,773 +1,123 @@
-<!DOCTYPE html>
-<html lang="my">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Shop</title>
-
-    <style>
-        /* ----- 全局重置 & 字体 ----- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', 'Arial', sans-serif;
-            background: #f0f2f5;
-            padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* ----- 容器 ----- */
-        .container {
-            max-width: 1200px;
-            width: 100%;
-        }
-
-        /* ----- 顶部导航 ----- */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            padding: 16px 28px;
-            border-radius: 18px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            margin-bottom: 28px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .header h1 {
-            font-size: 26px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #0088cc, #00b4d8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .cart-icon {
-            position: relative;
-            cursor: pointer;
-            background: #f0f2f5;
-            padding: 10px 18px 10px 14px;
-            border-radius: 40px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: background 0.2s;
-            border: none;
-            font-size: 18px;
-            color: #1a1a2e;
-        }
-        .cart-icon:hover {
-            background: #e4e7ec;
-        }
-
-        .cart-icon .badge {
-            background: #e63946;
-            color: white;
-            font-size: 13px;
-            font-weight: 700;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-        }
-        .cart-icon .badge.pop {
-            transform: scale(1.25);
-        }
-
-        .cart-icon .total-label {
-            font-weight: 600;
-            font-size: 15px;
-            color: #1a1a2e;
-        }
-
-        /* ----- 产品网格 ----- */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 22px;
-            margin-bottom: 30px;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px 16px 22px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-            text-align: center;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.10);
-        }
-
-        .product-card .emoji-big {
-            font-size: 52px;
-            margin-bottom: 8px;
-            line-height: 1.2;
-        }
-
-        .product-card h3 {
-            font-size: 18px;
-            color: #1a1a2e;
-            margin-bottom: 4px;
-            font-weight: 600;
-        }
-
-        .product-card .price {
-            font-size: 22px;
-            font-weight: 700;
-            color: #0088cc;
-            margin: 6px 0 14px;
-        }
-
-        .product-card .price small {
-            font-size: 14px;
-            font-weight: 400;
-            color: #6c757d;
-        }
-
-        .btn-add {
-            background: #0088cc;
-            color: white;
-            border: none;
-            padding: 10px 22px;
-            border-radius: 40px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.15s;
-            width: 100%;
-            max-width: 160px;
-        }
-        .btn-add:hover {
-            background: #0072aa;
-        }
-        .btn-add:active {
-            transform: scale(0.95);
-        }
-
-        .btn-add.in-cart {
-            background: #28a745;
-        }
-        .btn-add.in-cart:hover {
-            background: #1e7e34;
-        }
-
-        /* ----- 购物车面板 (滑出) ----- */
-        .cart-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.35);
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s;
-            z-index: 999;
-        }
-        .cart-overlay.open {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .cart-panel {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 420px;
-            max-width: 92vw;
-            height: 100%;
-            background: white;
-            box-shadow: -8px 0 30px rgba(0, 0, 0, 0.12);
-            padding: 28px 24px 24px;
-            transform: translateX(110%);
-            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-        }
-        .cart-overlay.open .cart-panel {
-            transform: translateX(0);
-        }
-
-        .cart-panel .cart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 14px;
-            border-bottom: 2px solid #f0f2f5;
-        }
-        .cart-panel .cart-header h2 {
-            font-size: 22px;
-            color: #1a1a2e;
-        }
-        .cart-panel .cart-header .close-btn {
-            background: none;
-            border: none;
-            font-size: 28px;
-            cursor: pointer;
-            color: #6c757d;
-            padding: 0 6px;
-            line-height: 1;
-            transition: color 0.2s;
-        }
-        .cart-panel .cart-header .close-btn:hover {
-            color: #e63946;
-        }
-
-        /* 购物车列表 */
-        .cart-items {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 16px;
-            padding-right: 4px;
-        }
-        .cart-items::-webkit-scrollbar {
-            width: 5px;
-        }
-        .cart-items::-webkit-scrollbar-thumb {
-            background: #d0d4dc;
-            border-radius: 10px;
-        }
-
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 4px 14px 0;
-            border-bottom: 1px solid #f0f2f5;
-        }
-        .cart-item .item-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .cart-item .item-name {
-            font-weight: 600;
-            color: #1a1a2e;
-        }
-        .cart-item .item-price {
-            font-size: 14px;
-            color: #6c757d;
-        }
-        .cart-item .item-qty {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .cart-item .item-qty button {
-            background: #f0f2f5;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            color: #1a1a2e;
-            transition: background 0.2s;
-        }
-        .cart-item .item-qty button:hover {
-            background: #e0e3e8;
-        }
-        .cart-item .item-qty .qty-num {
-            font-weight: 600;
-            min-width: 24px;
-            text-align: center;
-        }
-        .cart-item .item-qty .remove-btn {
-            background: none;
-            border: none;
-            color: #e63946;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0 4px;
-            opacity: 0.6;
-            transition: opacity 0.2s;
-        }
-        .cart-item .item-qty .remove-btn:hover {
-            opacity: 1;
-        }
-
-        .empty-cart {
-            text-align: center;
-            color: #9aa0ac;
-            padding: 40px 0;
-            font-size: 16px;
-        }
-        .empty-cart .big-emoji {
-            font-size: 48px;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        /* 购物车底部 */
-        .cart-footer {
-            border-top: 2px solid #f0f2f5;
-            padding-top: 18px;
-        }
-        .cart-footer .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 14px;
-        }
-        .cart-footer .total-row .total-price {
-            color: #0088cc;
-        }
-
-        .btn-checkout {
-            width: 100%;
-            background: #0088cc;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 40px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.15s;
-        }
-        .btn-checkout:hover {
-            background: #0072aa;
-        }
-        .btn-checkout:active {
-            transform: scale(0.97);
-        }
-        .btn-checkout:disabled {
-            background: #b0c4d9;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* ----- Toast 通知 ----- */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: #1a1a2e;
-            color: white;
-            padding: 14px 30px;
-            border-radius: 40px;
-            font-size: 15px;
-            font-weight: 500;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.20);
-            opacity: 0;
-            transition: opacity 0.4s, transform 0.4s;
-            z-index: 2000;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* ----- 响应式微调 ----- */
-        @media (max-width: 600px) {
-            .header {
-                padding: 14px 18px;
-            }
-            .header h1 {
-                font-size: 20px;
-            }
-            .cart-icon {
-                padding: 8px 14px;
-                font-size: 16px;
-            }
-            .cart-icon .total-label {
-                font-size: 13px;
-            }
-            .products-grid {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: 14px;
-            }
-            .product-card {
-                padding: 14px 10px 16px;
-            }
-            .product-card .emoji-big {
-                font-size: 40px;
-            }
-            .product-card h3 {
-                font-size: 16px;
-            }
-            .product-card .price {
-                font-size: 18px;
-            }
-            .cart-panel {
-                padding: 20px 16px 20px;
-            }
-            .toast {
-                font-size: 14px;
-                padding: 12px 22px;
-                white-space: normal;
-                max-width: 90vw;
-                text-align: center;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="container">
-
-        <!-- ===== 顶部 ===== -->
-        <header class="header">
-            <h1>🛍️ My Shop</h1>
-            <button class="cart-icon" id="cartToggle" aria-label="Open cart">
-                🛒
-                <span class="badge" id="cartBadge">0</span>
-                <span class="total-label" id="cartTotalLabel">0 ฿</span>
-            </button>
-        </header>
-
-        <!-- ===== 产品列表 ===== -->
-        <div class="products-grid" id="productGrid">
-            <!-- 由 JS 动态渲染 -->
-        </div>
-
-    </div>
-
-    <!-- ===== 购物车遮罩 + 面板 ===== -->
-    <div class="cart-overlay" id="cartOverlay">
-        <div class="cart-panel">
-            <div class="cart-header">
-                <h2>🛒 ကုန်ခြင်း</h2>
-                <button class="close-btn" id="cartClose" aria-label="Close cart">✕</button>
-            </div>
-
-            <div class="cart-items" id="cartItems">
-                <!-- 动态渲染 -->
-            </div>
-
-            <div class="cart-footer">
-                <div class="total-row">
-                    <span>စုစုပေါင်း</span>
-                    <span class="total-price" id="cartTotalPrice">0 ฿</span>
-                </div>
-                <button class="btn-checkout" id="checkoutBtn">✅ မှာယူမည်</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== Toast ===== -->
-    <div class="toast" id="toast"></div>
-
-    <script>
-        // ============================================================
-        //  数据
-        // ============================================================
-        const PRODUCTS = [
-            { id: 1, name: 'လတ်', emoji: '⌚', price: 500 },
-            { id: 2, name: 'နာရီ', emoji: '🕰️', price: 1200 },
-            { id: 3, name: 'လက်စွပ်', emoji: '💍', price: 350 },
-            { id: 4, name: 'ဆွဲကြိုး', emoji: '📿', price: 800 },
-            { id: 5, name: 'နားကပ်', emoji: '✨', price: 620 },
-            { id: 6, name: 'ကျောက်စီး', emoji: '💎', price: 1500 },
-        ];
-
-        // ============================================================
-        //  状态
-        // ============================================================
-        let cart = {}; // { productId: quantity }
-        let toastTimer = null;
-
-        // ============================================================
-        //  DOM 引用
-        // ============================================================
-        const grid = document.getElementById('productGrid');
-        const cartItemsEl = document.getElementById('cartItems');
-        const cartBadge = document.getElementById('cartBadge');
-        const cartTotalLabel = document.getElementById('cartTotalLabel');
-        const cartTotalPrice = document.getElementById('cartTotalPrice');
-        const cartOverlay = document.getElementById('cartOverlay');
-        const cartToggle = document.getElementById('cartToggle');
-        const cartClose = document.getElementById('cartClose');
-        const checkoutBtn = document.getElementById('checkoutBtn');
-        const toast = document.getElementById('toast');
-
-        // ============================================================
-        //  渲染产品
-        // ============================================================
-        function renderProducts() {
-            grid.innerHTML = PRODUCTS.map(p => {
-                const qty = cart[p.id] || 0;
-                const inCart = qty > 0;
-                return `
-                    <div class="product-card" data-id="${p.id}">
-                        <div class="emoji-big">${p.emoji}</div>
-                        <h3>${p.name}</h3>
-                        <div class="price">${p.price} <small>ကျပ်</small></div>
-                        <button class="btn-add ${inCart ? 'in-cart' : ''}" data-id="${p.id}">
-                            ${inCart ? `✅ ${qty} ခု` : '🛒 ထည့်မည်'}
-                        </button>
-                    </div>
-                `;
-            }).join('');
-
-            // 绑定按钮事件 (委托)
-            grid.querySelectorAll('.btn-add').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const id = parseInt(btn.dataset.id);
-                    const product = PRODUCTS.find(p => p.id === id);
-                    if (!product) return;
-                    addToCart(product);
-                });
-            });
-        }
-
-        // ============================================================
-        //  购物车操作
-        // ============================================================
-        function addToCart(product) {
-            const id = product.id;
-            if (!cart[id]) cart[id] = 0;
-            cart[id] += 1;
-            updateUI(product.name + ' ထည့်ပြီး ✅');
-        }
-
-        function removeFromCart(id) {
-            if (!cart[id]) return;
-            cart[id] -= 1;
-            if (cart[id] <= 0) delete cart[id];
-            updateUI('ဖယ်ရှားပြီး');
-        }
-
-        function clearCart() {
-            cart = {};
-            updateUI('ကုန်ခြင်းရှင်းပြီး');
-        }
-
-        function getCartTotal() {
-            let total = 0;
-            let count = 0;
-            for (const [id, qty] of Object.entries(cart)) {
-                const p = PRODUCTS.find(pr => pr.id === parseInt(id));
-                if (p) {
-                    total += p.price * qty;
-                    count += qty;
-                }
-            }
-            return { total, count };
-        }
-
-        // ============================================================
-        //  UI 更新
-        // ============================================================
-        function updateUI(toastMsg) {
-            // 1) 更新产品按钮
-            PRODUCTS.forEach(p => {
-                const qty = cart[p.id] || 0;
-                const btn = grid.querySelector(`.btn-add[data-id="${p.id}"]`);
-                if (btn) {
-                    if (qty > 0) {
-                        btn.classList.add('in-cart');
-                        btn.textContent = `✅ ${qty} ခု`;
-                    } else {
-                        btn.classList.remove('in-cart');
-                        btn.textContent = '🛒 ထည့်မည်';
-                    }
-                }
-            });
-
-            // 2) 购物车徽标 & 总价标签
-            const { total, count } = getCartTotal();
-            cartBadge.textContent = count;
-            cartTotalLabel.textContent = `${total} ကျပ်`;
-
-            // 徽标动画
-            if (count > 0) {
-                cartBadge.classList.add('pop');
-                setTimeout(() => cartBadge.classList.remove('pop'), 250);
-            }
-
-            // 3) 购物车列表
-            renderCartItems();
-
-            // 4) 底部总价
-            cartTotalPrice.textContent = `${total} ကျပ်`;
-
-            // 5) 结算按钮状态
-            checkoutBtn.disabled = count === 0;
-
-            // 6) Toast
-            if (toastMsg) showToast(toastMsg);
-        }
-
-        // ============================================================
-        //  渲染购物车列表
-        // ============================================================
-        function renderCartItems() {
-            const entries = Object.entries(cart);
-            if (entries.length === 0) {
-                cartItemsEl.innerHTML = `
-                    <div class="empty-cart">
-                        <span class="big-emoji">🛒</span>
-                        ကုန်ခြင်းထဲမှာ ပစ္စည်းမရှိပါဘူး။
-                    </div>
-                `;
-                return;
-            }
-
-            let html = '';
-            for (const [idStr, qty] of entries) {
-                const id = parseInt(idStr);
-                const p = PRODUCTS.find(pr => pr.id === id);
-                if (!p) continue;
-                const subtotal = p.price * qty;
-                html += `
-                    <div class="cart-item">
-                        <div class="item-info">
-                            <span class="item-name">${p.emoji} ${p.name}</span>
-                            <span class="item-price">${p.price} ကျပ် × ${qty} = ${subtotal} ကျပ်</span>
-                        </div>
-                        <div class="item-qty">
-                            <button class="qty-dec" data-id="${id}">−</button>
-                            <span class="qty-num">${qty}</span>
-                            <button class="qty-inc" data-id="${id}">+</button>
-                            <button class="remove-btn" data-id="${id}" title="ဖယ်ရှားမည်">✕</button>
-                        </div>
-                    </div>
-                `;
-            }
-            cartItemsEl.innerHTML = html;
-
-            // 绑定购物车内的按钮事件
-            cartItemsEl.querySelectorAll('.qty-inc').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = parseInt(btn.dataset.id);
-                    const p = PRODUCTS.find(pr => pr.id === id);
-                    if (p) addToCart(p);
-                });
-            });
-            cartItemsEl.querySelectorAll('.qty-dec').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = parseInt(btn.dataset.id);
-                    removeFromCart(id);
-                });
-            });
-            cartItemsEl.querySelectorAll('.remove-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = parseInt(btn.dataset.id);
-                    delete cart[id];
-                    updateUI('ဖယ်ရှားပြီး');
-                });
-            });
-        }
-
-        // ============================================================
-        //  Toast 通知
-        // ============================================================
-        function showToast(msg) {
-            if (toastTimer) {
-                clearTimeout(toastTimer);
-                toast.classList.remove('show');
-            }
-            // 强制回流
-            void toast.offsetWidth;
-            toast.textContent = msg;
-            toast.classList.add('show');
-            toastTimer = setTimeout(() => {
-                toast.classList.remove('show');
-                toastTimer = null;
-            }, 2000);
-        }
-
-        // ============================================================
-        //  面板开关
-        // ============================================================
-        function openCart() {
-            cartOverlay.classList.add('open');
-            document.body.style.overflow = 'hidden';
-            renderCartItems(); // 确保最新
-            const { total } = getCartTotal();
-            cartTotalPrice.textContent = `${total} ကျပ်`;
-            checkoutBtn.disabled = Object.keys(cart).length === 0;
-        }
-
-        function closeCart() {
-            cartOverlay.classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        cartToggle.addEventListener('click', openCart);
-        cartClose.addEventListener('click', closeCart);
-        cartOverlay.addEventListener('click', (e) => {
-            if (e.target === cartOverlay) closeCart();
-        });
-
-        // ============================================================
-        //  结算 (下单)
-        // ============================================================
-        checkoutBtn.addEventListener('click', () => {
-            const { total, count } = getCartTotal();
-            if (count === 0) return;
-
-            // 构建订单详情
-            const items = Object.entries(cart)
-                .map(([idStr, qty]) => {
-                    const p = PRODUCTS.find(pr => pr.id === parseInt(idStr));
-                    return p ? `${p.emoji} ${p.name} × ${qty}` : null;
-                })
-                .filter(Boolean)
-                .join('\n');
-
-            const msg = `✅ အော်ဒါရရှိပါသည်!\n\n${items}\n\nစုစုပေါင်း: ${total} ကျပ်`;
-            alert(msg);
-
-            // 清空购物车
-            clearCart();
-            closeCart();
-        });
-
-        // ============================================================
-        //  Keyboard: Escape 关闭购物车
-        // ============================================================
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && cartOverlay.classList.contains('open')) {
-                closeCart();
-            }
-        });
-
-        // ============================================================
-        //  启动
-        // ============================================================
-        renderProducts();
-        updateUI(null);
-
-        // 如果用户点击空白区域关闭 toast（可选）
-        toast.addEventListener('click', () => {
-            toast.classList.remove('show');
-            if (toastTimer) {
-                clearTimeout(toastTimer);
-                toastTimer = null;
-            }
-        });
-    </script>
-
-</body>
-</html>
+# app.py - Flask 主应用
+import os
+import json
+import requests
+from flask import Flask, render_template, request, jsonify
+from datetime import datetime
+
+app = Flask(__name__)
+
+# ===== 配置区域（请修改为你自己的信息）=====
+TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN"  # 替换为你的 Bot Token
+TELEGRAM_CHAT_ID = "YOUR_CHAT_ID"      # 替换为你的 Chat ID
+# =========================================
+
+# Telegram 发送消息函数
+def send_telegram_message(order_data):
+    """将订单信息发送到 Telegram"""
+    if TELEGRAM_BOT_TOKEN == "YOUR_BOT_TOKEN" or TELEGRAM_CHAT_ID == "YOUR_CHAT_ID":
+        print("⚠️ 请先配置 TELEGRAM_BOT_TOKEN 和 TELEGRAM_CHAT_ID")
+        return False
+
+    # 构建消息内容
+    items_text = ""
+    total_price = 0
+    for item in order_data['items']:
+        subtotal = item['price'] * item['quantity']
+        total_price += subtotal
+        items_text += f"• {item['name']} x{item['quantity']} = ¥{subtotal:.2f}\n"
+
+    message = f"""
+📋 **新订单来了！**
+━━━━━━━━━━━━━━━━━
+👤 **顾客信息**
+姓名：{order_data['customer']['name']}
+电话：{order_data['customer']['phone']}
+{ '备注：' + order_data['customer']['note'] if order_data['customer'].get('note') else '' }
+
+🍽️ **点餐明细**
+{items_text}
+━━━━━━━━━━━━━━━━━
+💰 **总计：¥{total_price:.2f}**
+
+🕐 下单时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+    """
+
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "Markdown"
+    }
+
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        if response.status_code == 200:
+            print("✅ 订单已发送到 Telegram")
+            return True
+        else:
+            print(f"❌ 发送失败: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ 请求异常: {e}")
+        return False
+
+# ===== 菜单数据 =====
+MENU = {
+    "热销推荐": [
+        {"id": 1, "name": "招牌红烧肉", "price": 58, "emoji": "🥩", "desc": "肥而不腻，入口即化"},
+        {"id": 2, "name": "清蒸鲈鱼", "price": 68, "emoji": "🐟", "desc": "鲜美滑嫩，原汁原味"},
+        {"id": 3, "name": "宫保鸡丁", "price": 48, "emoji": "🍗", "desc": "麻辣鲜香，经典川菜"},
+    ],
+    "家常小炒": [
+        {"id": 4, "name": "青椒肉丝", "price": 32, "emoji": "🌶️", "desc": "下饭好菜"},
+        {"id": 5, "name": "西红柿炒蛋", "price": 28, "emoji": "🍅", "desc": "酸甜可口，营养丰富"},
+        {"id": 6, "name": "干煸四季豆", "price": 26, "emoji": "🥬", "desc": "香辣脆嫩"},
+    ],
+    "汤品": [
+        {"id": 7, "name": "紫菜蛋花汤", "price": 18, "emoji": "🥣", "desc": "清淡鲜美"},
+        {"id": 8, "name": "玉米排骨汤", "price": 38, "emoji": "🌽", "desc": "香甜浓郁"},
+    ],
+    "主食": [
+        {"id": 9, "name": "白米饭", "price": 3, "emoji": "🍚", "desc": "香软可口"},
+        {"id": 10, "name": "炒面", "price": 15, "emoji": "🍜", "desc": "锅气十足"},
+    ]
+}
+
+# ===== 路由 =====
+@app.route('/')
+def index():
+    """点菜页面"""
+    return render_template('index.html', menu=MENU)
+
+@app.route('/api/menu')
+def get_menu():
+    """获取菜单 API"""
+    return jsonify(MENU)
+
+@app.route('/api/order', methods=['POST'])
+def submit_order():
+    """提交订单 API"""
+    data = request.get_json()
+
+    if not data or 'items' not in data or 'customer' not in data:
+        return jsonify({"success": False, "message": "订单数据不完整"}), 400
+
+    if not data['items']:
+        return jsonify({"success": False, "message": "购物车为空"}), 400
+
+    # 发送到 Telegram
+    success = send_telegram_message(data)
+
+    if success:
+        return jsonify({"success": True, "message": "订单提交成功！"})
+    else:
+        return jsonify({"success": False, "message": "订单提交失败，请稍后重试"}), 500
+
+# ===== 启动 =====
+if __name__ == '__main__':
+    print("=" * 50)
+    print("🍽️  点菜系统已启动")
+    print(f"📱 访问 http://127.0.0.1:5000 开始点菜")
+    print("=" * 50)
+    app.run(debug=True, host='0.0.0.0', port=5000)
