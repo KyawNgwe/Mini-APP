@@ -3,55 +3,1006 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🥤 饮品菜单</title>
-    <link rel="stylesheet" href="style.css">
+    <title>🥤 饮品点单系统 - Telegram Bot</title>
+    <style>
+        /* ============ 样式 ============ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .status-bar .bot-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.online {
+            background: #2ecc71;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #e74c3c;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .status-bar .order-stats {
+            display: flex;
+            gap: 30px;
+        }
+
+        .status-bar .stat-item {
+            text-align: center;
+        }
+
+        .status-bar .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .status-bar .stat-label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        /* 设置面板 */
+        .settings-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .settings-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-panel .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .settings-panel input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .settings-panel input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .settings-panel .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .settings-status {
+            margin-top: 12px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .settings-status.ready {
+            background: #d5f5e3;
+            color: #27ae60;
+        }
+
+        .settings-status.error {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+
+        .settings-status.info {
+            background: #d6eaf8;
+            color: #2e86c1;
+        }
+
+        /* 主内容 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 菜单区域 */
+        .menu-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .menu-section .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .category-filter {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 18px;
+            border: 2px solid #ecf0f1;
+            border-radius: 20px;
+            background: white;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .menu-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .menu-item .emoji {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .menu-item .name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+
+        .menu-item .price {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .menu-item .add-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .menu-item .add-btn:hover {
+            transform: scale(1.1);
+            background: #27ae60;
+        }
+
+        /* 购物车 */
+        .cart-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 500;
+        }
+
+        .cart-item-price {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cart-item-controls button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #ecf0f1;
+            font-size: 0.9rem;
+        }
+
+        .cart-item-controls button:hover {
+            background: #bdc3c7;
+        }
+
+        .cart-item-controls .qty {
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .cart-empty {
+            text-align: center;
+            color: #bdc3c7;
+            padding: 30px 0;
+        }
+
+        .cart-total {
+            border-top: 2px solid #ecf0f1;
+            padding-top: 15px;
+        }
+
+        .cart-total .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .cart-total .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            z-index: 9999;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.2);
+            max-width: 400px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success { background: #2ecc71; }
+        .toast.error { background: #e74c3c; }
+        .toast.info { background: #3498db; }
+        .toast.warning { background: #f39c12; }
+
+        /* 订单历史 */
+        .order-history {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .order-history h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .order-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .order-item {
+            padding: 10px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .order-item .order-id {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .order-item .order-time {
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+
+        .order-item .order-status {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .order-item .order-status.sent {
+            background: #d5f5e3;
+            color: #27ae60;
+        }
+
+        .order-item .order-status.failed {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🥤 饮品菜单</h1>
-            <div class="cart-info">
-                <span id="cartCount">🛒 0</span>
-            </div>
-        </header>
-
-        <div class="category-filter">
-            <button class="filter-btn active" data-category="all">全部</button>
-            <button class="filter-btn" data-category="coffee">☕ 咖啡</button>
-            <button class="filter-btn" data-category="tea">🍵 茶饮</button>
-            <button class="filter-btn" data-category="juice">🧃 果汁</button>
-            <button class="filter-btn" data-category="smoothie">🥤 冰沙</button>
-        </div>
-
-        <div class="menu-grid" id="menuGrid">
-            <!-- 动态生成 -->
-        </div>
-
-        <div class="cart-sidebar" id="cartSidebar">
-            <div class="cart-header">
-                <h2>🛒 购物车</h2>
-                <button class="close-cart" id="closeCart">✕</button>
-            </div>
-            <div class="cart-items" id="cartItems">
-                <p class="empty-cart">购物车是空的</p>
-            </div>
-            <div class="cart-footer">
-                <div class="total-price">
-                    <span>总计：</span>
-                    <span id="totalPrice">¥0.00</span>
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="bot-info">
+                <span class="status-dot" id="statusDot"></span>
+                <div>
+                    <div style="font-weight:600;" id="botStatusText">Telegram Bot 未连接</div>
+                    <div style="font-size:0.8rem;color:#7f8c8d;" id="botInfoText">请配置 Bot Token</div>
                 </div>
-                <button class="checkout-btn" id="checkoutBtn">📤 提交订单</button>
+            </div>
+            <div class="order-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalOrders">0</div>
+                    <div class="stat-label">总订单</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="todayOrders">0</div>
+                    <div class="stat-label">今日订单</div>
+                </div>
             </div>
         </div>
 
-        <div class="cart-toggle" id="cartToggle">
-            🛒 <span id="cartBadge">0</span>
+        <!-- 设置面板 -->
+        <div class="settings-panel">
+            <h3>🤖 Telegram Bot 设置</h3>
+            <div class="input-group">
+                <input type="text" id="botTokenInput" placeholder="Bot Token (例如: 123456:ABC-DEF)" />
+                <input type="text" id="chatIdInput" placeholder="Chat ID (例如: 123456789)" />
+                <button class="btn btn-primary" id="saveSettingsBtn">💾 保存并连接</button>
+                <button class="btn btn-success" id="testConnectionBtn">📡 测试连接</button>
+            </div>
+            <div class="settings-status info" id="settingsStatus">
+                💡 配置后，所有订单将自动发送到你的 Telegram
+            </div>
+        </div>
+
+        <!-- 主内容 -->
+        <div class="main-content">
+            <!-- 菜单 -->
+            <div class="menu-section">
+                <div class="header">
+                    <h3>📋 饮品菜单</h3>
+                    <div class="category-filter" id="categoryFilter">
+                        <button class="filter-btn active" data-category="all">全部</button>
+                        <button class="filter-btn" data-category="coffee">☕ 咖啡</button>
+                        <button class="filter-btn" data-category="tea">🍵 茶饮</button>
+                        <button class="filter-btn" data-category="juice">🧃 果汁</button>
+                        <button class="filter-btn" data-category="smoothie">🥤 冰沙</button>
+                    </div>
+                </div>
+                <div class="menu-grid" id="menuGrid"></div>
+            </div>
+
+            <!-- 购物车 -->
+            <div class="cart-section">
+                <h3>
+                    🛒 购物车
+                    <span style="font-size:0.9rem;color:#7f8c8d;" id="cartCount">0 件</span>
+                </h3>
+                <div class="cart-items" id="cartItems">
+                    <div class="cart-empty">🛒 购物车是空的</div>
+                </div>
+                <div class="cart-total">
+                    <div class="total-row">
+                        <span>总计：</span>
+                        <span id="totalPrice">¥0.00</span>
+                    </div>
+                    <button class="btn btn-success" id="checkoutBtn">📤 提交订单到 Telegram</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 订单历史 -->
+        <div class="order-history">
+            <h3>📜 订单历史</h3>
+            <div class="order-list" id="orderList">
+                <div style="text-align:center;color:#bdc3c7;padding:20px;">暂无订单</div>
+            </div>
         </div>
     </div>
 
+    <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <script src="config.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // ============================================================
+        // ============ JavaScript 主逻辑 ============
+        // ============================================================
+
+        // ============ 数据 ============
+        const MENU_ITEMS = [
+            { id: 1, name: '美式咖啡', emoji: '☕', category: 'coffee', price: 18.00 },
+            { id: 2, name: '拿铁咖啡', emoji: '☕', category: 'coffee', price: 22.00 },
+            { id: 3, name: '卡布奇诺', emoji: '☕', category: 'coffee', price: 24.00 },
+            { id: 4, name: '抹茶拿铁', emoji: '🍵', category: 'coffee', price: 26.00 },
+            { id: 5, name: '珍珠奶茶', emoji: '🧋', category: 'tea', price: 16.00 },
+            { id: 6, name: '茉莉花茶', emoji: '🌸', category: 'tea', price: 15.00 },
+            { id: 7, name: '柠檬红茶', emoji: '🍋', category: 'tea', price: 14.00 },
+            { id: 8, name: '鲜榨橙汁', emoji: '🍊', category: 'juice', price: 20.00 },
+            { id: 9, name: '西瓜汁', emoji: '🍉', category: 'juice', price: 18.00 },
+            { id: 10, name: '草莓冰沙', emoji: '🍓', category: 'smoothie', price: 28.00 },
+            { id: 11, name: '芒果冰沙', emoji: '🥭', category: 'smoothie', price: 28.00 },
+            { id: 12, name: '巧克力冰沙', emoji: '🍫', category: 'smoothie', price: 26.00 }
+        ];
+
+        // ============ 状态 ============
+        let cart = [];
+        let currentCategory = 'all';
+        let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+        let config = {
+            botToken: localStorage.getItem('telegram_bot_token') || '',
+            chatId: localStorage.getItem('telegram_chat_id') || ''
+        };
+        let botConnected = false;
+
+        // ============ DOM 引用 ============
+        const menuGrid = document.getElementById('menuGrid');
+        const cartItems = document.getElementById('cartItems');
+        const cartCount = document.getElementById('cartCount');
+        const totalPrice = document.getElementById('totalPrice');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const toast = document.getElementById('toast');
+        const botTokenInput = document.getElementById('botTokenInput');
+        const chatIdInput = document.getElementById('chatIdInput');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const testConnectionBtn = document.getElementById('testConnectionBtn');
+        const settingsStatus = document.getElementById('settingsStatus');
+        const statusDot = document.getElementById('statusDot');
+        const botStatusText = document.getElementById('botStatusText');
+        const botInfoText = document.getElementById('botInfoText');
+        const totalOrders = document.getElementById('totalOrders');
+        const todayOrders = document.getElementById('todayOrders');
+        const orderList = document.getElementById('orderList');
+
+        // ============ 渲染菜单 ============
+        function renderMenu(category = 'all') {
+            const filtered = category === 'all' 
+                ? MENU_ITEMS 
+                : MENU_ITEMS.filter(item => item.category === category);
+            
+            menuGrid.innerHTML = filtered.map(item => `
+                <div class="menu-item">
+                    <span class="emoji">${item.emoji}</span>
+                    <div class="name">${item.name}</div>
+                    <div class="price">¥${item.price.toFixed(2)}</div>
+                    <button class="add-btn" onclick="addToCart(${item.id})">+</button>
+                </div>
+            `).join('');
+        }
+
+        // ============ 购物车操作 ============
+        function addToCart(itemId) {
+            const item = MENU_ITEMS.find(i => i.id === itemId);
+            if (!item) return;
+
+            const existing = cart.find(i => i.id === itemId);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({ ...item, quantity: 1 });
+            }
+
+            updateCartUI();
+            showToast(`✅ 已添加 ${item.emoji} ${item.name}`, 'success');
+        }
+
+        function removeFromCart(itemId) {
+            cart = cart.filter(item => item.id !== itemId);
+            updateCartUI();
+        }
+
+        function updateQuantity(itemId, change) {
+            const item = cart.find(i => i.id === itemId);
+            if (!item) return;
+
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                removeFromCart(itemId);
+                return;
+            }
+            updateCartUI();
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+            cartCount.textContent = `${count} 件`;
+            totalPrice.textContent = `¥${total.toFixed(2)}`;
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div class="cart-empty">🛒 购物车是空的</div>';
+                checkoutBtn.disabled = true;
+                return;
+            }
+
+            checkoutBtn.disabled = false;
+            cartItems.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.emoji} ${item.name}</div>
+                        <div class="cart-item-price">¥${(item.price * item.quantity).toFixed(2)}</div>
+                    </div>
+                    <div class="cart-item-controls">
+                        <button onclick="updateQuantity(${item.id}, -1)">−</button>
+                        <span class="qty">${item.quantity}</span>
+                        <button onclick="updateQuantity(${item.id}, 1)">+</button>
+                        <button onclick="removeFromCart(${item.id})" style="background:#e74c3c;color:white;">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============ 生成订单号 ============
+        function generateOrderNumber() {
+            const date = new Date();
+            const prefix = date.getFullYear().toString().slice(2) + 
+                           String(date.getMonth() + 1).padStart(2, '0') + 
+                           String(date.getDate()).padStart(2, '0');
+            const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+            return `ORD-${prefix}${random}`;
+        }
+
+        // ============ 发送到 Telegram ============
+        async function sendToTelegram(orderDetails) {
+            const { botToken, chatId } = config;
+
+            if (!botToken || !chatId) {
+                showToast('⚠️ 请先配置 Bot Token 和 Chat ID', 'error');
+                return false;
+            }
+
+            const orderNumber = generateOrderNumber();
+            const timestamp = new Date().toLocaleString('zh-CN');
+            
+            // 构建美观的消息
+            let message = `🧾 **新订单通知**\n\n`;
+            message += `📋 **订单号：** ${orderNumber}\n`;
+            message += `🕐 **时间：** ${timestamp}\n`;
+            message += `📦 **订单详情：**\n`;
+            message += `─────────────────\n`;
+            
+            orderDetails.items.forEach((item, index) => {
+                message += `${index + 1}. ${item.emoji} ${item.name} × ${item.quantity} = ¥${(item.price * item.quantity).toFixed(2)}\n`;
+            });
+            
+            message += `─────────────────\n`;
+            message += `💰 **总计：¥${orderDetails.total.toFixed(2)}**\n\n`;
+            message += `👨‍🍳 请尽快准备餐品！`;
+
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    // 保存订单
+                    const order = {
+                        id: orderNumber,
+                        items: orderDetails.items,
+                        total: orderDetails.total,
+                        time: timestamp,
+                        status: 'sent'
+                    };
+                    orders.push(order);
+                    localStorage.setItem('orders', JSON.stringify(orders));
+                    updateOrderHistory();
+                    
+                    showToast(`✅ 订单 ${orderNumber} 已发送到 Telegram`, 'success');
+                    return true;
+                } else {
+                    showToast(`❌ 发送失败：${data.description}`, 'error');
+                    // 保存失败订单
+                    const order = {
+                        id: orderNumber,
+                        items: orderDetails.items,
+                        total: orderDetails.total,
+                        time: timestamp,
+                        status: 'failed'
+                    };
+                    orders.push(order);
+                    localStorage.setItem('orders', JSON.stringify(orders));
+                    updateOrderHistory();
+                    return false;
+                }
+            } catch (error) {
+                showToast(`❌ 网络错误：${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // ============ 结账 ============
+        async function handleCheckout() {
+            if (cart.length === 0) {
+                showToast('⚠️ 购物车是空的', 'error');
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const orderDetails = {
+                items: cart.map(item => ({
+                    name: item.name,
+                    emoji: item.emoji,
+                    price: item.price,
+                    quantity: item.quantity
+                })),
+                total: total
+            };
+
+            // 显示确认对话框
+            const summary = cart.map(item => 
+                `  ${item.emoji} ${item.name} × ${item.quantity} = ¥${(item.price * item.quantity).toFixed(2)}`
+            ).join('\n');
+            
+            if (!confirm(`📋 确认订单\n\n${summary}\n\n💰 总计：¥${total.toFixed(2)}\n\n发送到 Telegram？`)) {
+                return;
+            }
+
+            checkoutBtn.disabled = true;
+            checkoutBtn.textContent = '⏳ 发送中...';
+
+            const success = await sendToTelegram(orderDetails);
+            
+            if (success) {
+                clearCart();
+            }
+
+            checkoutBtn.disabled = false;
+            checkoutBtn.textContent = '📤 提交订单到 Telegram';
+        }
+
+        // ============ 测试连接 ============
+        async function testConnection() {
+            const botToken = botTokenInput.value.trim();
+            const chatId = chatIdInput.value.trim();
+
+            if (!botToken || !chatId) {
+                showToast('⚠️ 请填写完整的配置信息', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);
+                const data = await response.json();
+                
+                if (data.ok) {
+                    const botName = data.result.username;
+                    showToast(`✅ Bot 连接成功！@${botName}`, 'success');
+                    updateBotStatus(true, botName);
+                    
+                    // 发送测试消息
+                    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            text: '✅ 连接测试成功！系统已就绪。'
+                        })
+                    });
+                } else {
+                    showToast('❌ Bot Token 无效，请检查', 'error');
+                    updateBotStatus(false);
+                }
+            } catch (error) {
+                showToast(`❌ 连接失败：${error.message}`, 'error');
+                updateBotStatus(false);
+            }
+        }
+
+        // ============ Bot 状态更新 ============
+        function updateBotStatus(connected, botName = '') {
+            botConnected = connected;
+            if (connected) {
+                statusDot.className = 'status-dot online';
+                botStatusText.textContent = `🤖 @${botName} 已连接`;
+                botInfoText.textContent = '✅ 订单将自动发送到此 Bot';
+                settingsStatus.className = 'settings-status ready';
+                settingsStatus.textContent = `✅ 已连接到 @${botName}，准备就绪！`;
+            } else {
+                statusDot.className = 'status-dot offline';
+                botStatusText.textContent = '⚠️ Telegram Bot 未连接';
+                botInfoText.textContent = '请配置并测试连接';
+                settingsStatus.className = 'settings-status error';
+                settingsStatus.textContent = '❌ 未连接到 Telegram，请配置并测试';
+            }
+        }
+
+        // ============ 订单历史 ============
+        function updateOrderHistory() {
+            const today = new Date().toDateString();
+            const todayOrdersCount = orders.filter(o => 
+                new Date(o.time).toDateString() === today
+            ).length;
+
+            totalOrders.textContent = orders.length;
+            todayOrders.textContent = todayOrdersCount;
+
+            if (orders.length === 0) {
+                orderList.innerHTML = '<div style="text-align:center;color:#bdc3c7;padding:20px;">暂无订单</div>';
+                return;
+            }
+
+            // 显示最近10条
+            const recentOrders = orders.slice(-10).reverse();
+            orderList.innerHTML = recentOrders.map(order => `
+                <div class="order-item">
+                    <div>
+                        <span class="order-id">${order.id}</span>
+                        <span class="order-time">${order.time}</span>
+                    </div>
+                    <div>
+                        <span style="font-weight:bold;color:#e74c3c;">¥${order.total.toFixed(2)}</span>
+                        <span class="order-status ${order.status}">${order.status === 'sent' ? '✅ 已发送' : '❌ 失败'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============ 设置管理 ============
+        function loadSettings() {
+            botTokenInput.value = config.botToken;
+            chatIdInput.value = config.chatId;
+            
+            if (config.botToken && config.chatId) {
+                // 自动测试连接
+                setTimeout(testConnection, 500);
+            } else {
+                updateBotStatus(false);
+            }
+        }
+
+        function saveSettings() {
+            const botToken = botTokenInput.value.trim();
+            const chatId = chatIdInput.value.trim();
+
+            if (!botToken || !chatId) {
+                showToast('⚠️ 请填写完整的配置信息', 'error');
+                return;
+            }
+
+            config.botToken = botToken;
+            config.chatId = chatId;
+            
+            localStorage.setItem('telegram_bot_token', botToken);
+            localStorage.setItem('telegram_chat_id', chatId);
+
+            showToast('💾 设置已保存，正在测试连接...', 'info');
+            setTimeout(testConnection, 500);
+        }
+
+        // ============ Toast ============
+        let toastTimeout;
+
+        function showToast(message, type = 'info') {
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // ============ 事件监听 ============
+        // 分类过滤
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentCategory = this.dataset.category;
+                renderMenu(currentCategory);
+            });
+        });
+
+        // 保存设置
+        saveSettingsBtn.addEventListener('click', saveSettings);
+        testConnectionBtn.addEventListener('click', testConnection);
+
+        // 回车保存
+        botTokenInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveSettings();
+        });
+        chatIdInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveSettings();
+        });
+
+        // 结账
+        checkoutBtn.addEventListener('click', handleCheckout);
+
+        // ============ 初始化 ============
+        loadSettings();
+        renderMenu();
+        updateCartUI();
+        updateOrderHistory();
+
+        console.log('🍹 饮品点单系统已启动');
+        console.log('📊 当前订单数:', orders.length);
+        console.log('🤖 Bot 状态:', config.botToken ? '已配置' : '未配置');
+    </script>
 </body>
 </html>
