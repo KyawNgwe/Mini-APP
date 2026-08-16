@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥤 饮品菜单</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🥤 饮品菜单</h1>
+            <div class="cart-info">
+                <span id="cartCount">🛒 0</span>
+            </div>
+        </header>
+
+        <div class="category-filter">
+            <button class="filter-btn active" data-category="all">全部</button>
+            <button class="filter-btn" data-category="coffee">☕ 咖啡</button>
+            <button class="filter-btn" data-category="tea">🍵 茶饮</button>
+            <button class="filter-btn" data-category="juice">🧃 果汁</button>
+            <button class="filter-btn" data-category="smoothie">🥤 冰沙</button>
+        </div>
+
+        <div class="menu-grid" id="menuGrid">
+            <!-- 动态生成 -->
+        </div>
+
+        <div class="cart-sidebar" id="cartSidebar">
+            <div class="cart-header">
+                <h2>🛒 购物车</h2>
+                <button class="close-cart" id="closeCart">✕</button>
+            </div>
+            <div class="cart-items" id="cartItems">
+                <p class="empty-cart">购物车是空的</p>
+            </div>
+            <div class="cart-footer">
+                <div class="total-price">
+                    <span>总计：</span>
+                    <span id="totalPrice">¥0.00</span>
+                </div>
+                <button class="checkout-btn" id="checkoutBtn">📤 提交订单</button>
+            </div>
+        </div>
+
+        <div class="cart-toggle" id="cartToggle">
+            🛒 <span id="cartBadge">0</span>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
