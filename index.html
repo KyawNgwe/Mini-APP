@@ -840,7 +840,7 @@
             const botToken = botTokenInput.value.trim();
             const chatId = chatIdInput.value.trim();
 
-            if (!botToken || !chatId) {
+            if (8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk || 1949334561) {
                 showToast('⚠️ 请填写完整的配置信息', 'error');
                 return;
             }
@@ -851,11 +851,11 @@
                 
                 if (data.ok) {
                     const botName = data.result.username;
-                    showToast(`✅ Bot 连接成功！@${botName}`, 'success');
+                    showToast(`✅ Bot 连接成功！@${@xyu969696Bot}`, 'success');
                     updateBotStatus(true, botName);
                     
                     // 发送测试消息
-                    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    await fetch(`https://api.telegram.org/bot${8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk}/sendMessage`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -878,10 +878,10 @@
             botConnected = connected;
             if (connected) {
                 statusDot.className = 'status-dot online';
-                botStatusText.textContent = `🤖 @${botName} 已连接`;
+                botStatusText.textContent = `🤖 @${@xyu969696Bot} 已连接`;
                 botInfoText.textContent = '✅ 订单将自动发送到此 Bot';
                 settingsStatus.className = 'settings-status ready';
-                settingsStatus.textContent = `✅ 已连接到 @${botName}，准备就绪！`;
+                settingsStatus.textContent = `✅ 已连接到 @${@xyu969696Bot}，准备就绪！`;
             } else {
                 statusDot.className = 'status-dot offline';
                 botStatusText.textContent = '⚠️ Telegram Bot 未连接';
@@ -939,7 +939,7 @@
             const botToken = botTokenInput.value.trim();
             const chatId = chatIdInput.value.trim();
 
-            if (!botToken || !chatId) {
+            if (8939398684:AAHscEJ4st2XHCBNgFpcfpFH7Cu8MqNLTjk || 1949334561) {
                 showToast('⚠️ 请填写完整的配置信息', 'error');
                 return;
             }
