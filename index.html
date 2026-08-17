@@ -1,557 +1,550 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>茶饮菜单</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Noto+Sans+SC:wght@400;500;600&display=swap');
 
-  :root{
-    --cream:#FAF5EC;
-    --paper:#FFFFFF;
-    --brown-900:#2B211B;
-    --brown-700:#5A4636;
-    --brown-400:#9C8570;
-    --brown-200:#E4D8C7;
-    --amber:#B8722E;
-    --amber-dark:#8A5420;
-    --matcha:#6B7F52;
-    --matcha-dark:#4C5B3A;
-    --red:#B4453A;
+  * { box-sizing: border-box; }
+  #shell {
+    min-height: 100vh;
+    background: #16302B;
+    font-family: 'Noto Sans SC', system-ui, sans-serif;
+    color: #1F2A24;
+    padding-bottom: 90px;
   }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--cream);
-    color:var(--brown-900);
-    font-family:'Noto Sans SC', sans-serif;
-    padding-bottom:90px;
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 0 18px; }
+  .brand { font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 15px; letter-spacing: 0.08em; color: #F5EBD8; }
+  .icon-btn-top {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(245,238,224,0.08); color: #C69A4B;
+    border: 1px solid rgba(198,154,75,0.35); cursor: pointer;
   }
-  .wrap{max-width:480px;margin:0 auto;padding:0 16px;}
+  .hero { padding: 18px 18px 26px 18px; text-align: center; }
+  .hero-mark { display: flex; justify-content: center; margin-bottom: 6px; }
+  .wisp { animation: rise 4s ease-in-out infinite; transform-origin: bottom center; }
+  .wisp-a { animation-delay: 0s; }
+  .wisp-b { animation-delay: 1.1s; }
+  @keyframes rise {
+    0% { opacity: 0; transform: translateY(6px) scaleY(0.9); }
+    35% { opacity: 0.9; }
+    100% { opacity: 0; transform: translateY(-10px) scaleY(1.05); }
+  }
+  .hero-title { font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 28px; color: #FBF6EC; letter-spacing: 0.03em; }
+  .hero-sub { margin-top: 6px; font-size: 12.5px; color: #9DBDAE; letter-spacing: 0.12em; }
 
-  header{
-    padding:28px 16px 18px;
-    background:var(--cream);
-    position:relative;
-    text-align:center;
+  .panel { background: #FBF6EC; border-radius: 26px 26px 0 0; padding: 22px 16px 30px 16px; min-height: 55vh; }
+  .cat-title {
+    font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 16px; color: #16302B;
+    margin: 22px 4px 10px 4px; display: flex; align-items: center; gap: 8px;
   }
-  .gear{
-    position:absolute;
-    top:24px;right:16px;
-    width:38px;height:38px;
-    border-radius:50%;
-    border:1px solid var(--brown-200);
-    background:var(--paper);
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;
-    font-size:18px;
-    color:var(--brown-700);
-  }
-  .gear:active{transform:scale(0.95);}
-  h1{
-    font-family:'Noto Serif SC', serif;
-    font-weight:700;
-    font-size:26px;
-    margin:0 0 4px;
-    letter-spacing:1px;
-  }
-  .tagline{
-    color:var(--brown-400);
-    font-size:13px;
-    letter-spacing:2px;
-  }
-  .divider{
-    width:36px;height:3px;background:var(--amber);
-    margin:14px auto 0;border-radius:2px;
-  }
+  .cat-title:first-child { margin-top: 0; }
+  .cat-title::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #E2672A; display: inline-block; }
 
-  .section-title{
-    font-family:'Noto Serif SC', serif;
-    font-size:15px;
-    font-weight:700;
-    color:var(--amber-dark);
-    margin:22px 0 10px;
-    display:flex;align-items:center;gap:8px;
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card {
+    background: #fff; border-radius: 16px; padding: 12px; border: 1px solid #EFE6D4;
+    text-align: left; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease;
   }
-  .section-title::after{
-    content:'';flex:1;height:1px;background:var(--brown-200);
-  }
+  .card:active { transform: scale(0.97); }
+  .card:hover { box-shadow: 0 6px 16px rgba(22,48,43,0.08); }
+  .card-name { font-weight: 600; font-size: 14.5px; color: #1F2A24; }
+  .card-desc { font-size: 11.5px; color: #8B8577; margin-top: 4px; line-height: 1.5; min-height: 32px; }
+  .card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .card-price { font-weight: 700; color: #C0562A; font-size: 14px; }
+  .add-dot { width: 26px; height: 26px; border-radius: 50%; background: #16302B; color: #F5EBD8; display: flex; align-items: center; justify-content: center; font-size: 15px; }
 
-  .card{
-    background:var(--paper);
-    border:1px solid var(--brown-200);
-    border-radius:14px;
-    padding:14px;
-    margin-bottom:10px;
-    display:flex;
-    gap:12px;
-    align-items:center;
+  .overlay {
+    position: fixed; inset: 0; background: rgba(15,26,23,0.55);
+    display: none; align-items: flex-end; justify-content: center;
+    z-index: 50; backdrop-filter: blur(2px);
   }
-  .card-icon{
-    width:46px;height:46px;border-radius:50%;
-    background:var(--brown-200);
-    display:flex;align-items:center;justify-content:center;
-    font-size:20px;flex-shrink:0;
+  .overlay.open { display: flex; }
+  .sheet {
+    width: 100%; max-width: 480px; background: #FBF6EC; border-radius: 22px 22px 0 0;
+    padding: 20px 18px 26px 18px; animation: slideup .25s ease;
+    max-height: 88vh; overflow-y: auto;
   }
-  .card-info{flex:1;min-width:0;}
-  .card-name{font-size:15px;font-weight:500;margin:0 0 2px;}
-  .card-desc{font-size:12px;color:var(--brown-400);margin:0 0 6px;line-height:1.4;}
-  .card-price{font-size:14px;color:var(--amber-dark);font-weight:700;}
+  @keyframes slideup { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .sheet-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  .sheet-title { font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 18px; color: #16302B; }
+  .sheet-desc { font-size: 12px; color: #8B8577; margin-top: 4px; }
+  .icon-btn {
+    width: 30px; height: 30px; border-radius: 50%; background: #EFE6D4;
+    display: flex; align-items: center; justify-content: center; color: #16302B;
+    flex-shrink: 0; border: none; cursor: pointer; font-size: 15px;
+  }
+  .field-block { margin-bottom: 16px; }
+  .field-label { font-size: 12.5px; font-weight: 600; color: #5C6B62; margin-bottom: 8px; }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { padding: 7px 14px; border-radius: 999px; font-size: 13px; border: 1px solid #DED2B7; background: #fff; color: #4A4438; cursor: pointer; }
+  .chip.chip-on { background: #16302B; color: #F5EBD8; border-color: #16302B; }
+  .qty-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .stepper { display: flex; align-items: center; gap: 14px; }
+  .qty-num { min-width: 18px; text-align: center; font-weight: 600; }
+  .primary-btn {
+    width: 100%; padding: 14px; border-radius: 14px; background: #E2672A; color: #fff;
+    font-weight: 600; font-size: 14.5px; border: none; cursor: pointer;
+  }
+  .primary-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .ghost-btn {
+    width: 100%; padding: 13px; border-radius: 14px; background: transparent; color: #C0562A;
+    font-weight: 600; font-size: 13.5px; border: 1px solid #E2672A; cursor: pointer;
+  }
+  .settings-ok { display: flex; align-items: center; gap: 8px; color: #2E6E4E; font-weight: 600; font-size: 13.5px; margin-bottom: 8px; }
+  .settings-note { font-size: 12px; color: #8B8577; line-height: 1.6; margin-bottom: 14px; }
+  .text-input { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid #DED2B7; font-size: 13.5px; background: #fff; }
 
-  .stepper{
-    display:flex;align-items:center;gap:10px;flex-shrink:0;
+  .cartbar {
+    position: fixed; left: 0; right: 0; bottom: 0; display: none; justify-content: center; z-index: 40;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom)) 14px; pointer-events: none;
   }
-  .stepper button{
-    width:28px;height:28px;border-radius:50%;
-    border:1px solid var(--brown-200);
-    background:var(--cream);
-    font-size:16px;color:var(--brown-700);
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;padding:0;
+  .cartbar.open { display: flex; }
+  .cartbar-inner {
+    pointer-events: auto; width: 100%; max-width: 480px; background: #16302B; border-radius: 16px;
+    padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35); animation: slideup .25s ease;
   }
-  .stepper button:active{transform:scale(0.9);}
-  .stepper span{min-width:16px;text-align:center;font-size:14px;font-weight:500;}
+  .cartbar-left { display: flex; align-items: center; gap: 10px; color: #F5EBD8; }
+  .cartbar-badge { background: #E2672A; color: #fff; font-size: 11px; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .cartbar-total { font-weight: 700; }
+  .cartbar-btn { background: #E2672A; color: #fff; border: none; border-radius: 10px; padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
-  /* cart bar */
-  .cartbar{
-    position:fixed;left:0;right:0;bottom:0;
-    background:var(--brown-900);
-    color:#fff;
-    padding:14px 16px;
-    display:flex;align-items:center;justify-content:space-between;
-    max-width:480px;margin:0 auto;
-    border-radius:16px 16px 0 0;
-    box-shadow:0 -4px 16px rgba(0,0,0,0.12);
-    transform:translateY(120%);
-    transition:transform 0.25s ease;
-    z-index:20;
-  }
-  .cartbar.show{transform:translateY(0);}
-  .cartbar .left{font-size:13px;color:#E4D8C7;}
-  .cartbar .total{font-size:18px;font-weight:700;color:#fff;}
-  .cartbar button{
-    background:var(--amber);
-    color:#fff;border:none;border-radius:10px;
-    padding:10px 18px;font-size:14px;font-weight:500;
-    cursor:pointer;
-  }
+  .cart-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .cart-row { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #EFE6D4; border-radius: 12px; padding: 10px 12px; }
+  .cart-row-name { font-weight: 600; font-size: 13.5px; }
+  .cart-row-meta { font-size: 11px; color: #8B8577; margin-top: 2px; }
+  .cart-row-right { display: flex; align-items: center; gap: 10px; }
+  .cart-price { font-size: 12.5px; color: #C0562A; font-weight: 700; min-width: 40px; text-align: right; }
+  .empty-cart { text-align: center; padding: 30px 10px; color: #8B8577; font-size: 13px; }
 
-  /* modal */
-  .overlay{
-    position:fixed;inset:0;background:rgba(43,33,27,0.45);
-    display:none;align-items:flex-end;justify-content:center;z-index:30;
-  }
-  .overlay.show{display:flex;}
-  .sheet{
-    background:var(--paper);
-    width:100%;max-width:480px;
-    border-radius:20px 20px 0 0;
-    padding:20px 20px 24px;
-    max-height:85vh;overflow-y:auto;
-  }
-  .sheet h2{
-    font-family:'Noto Serif SC', serif;
-    font-size:18px;margin:0 0 14px;
-  }
-  .sheet .close{
-    float:right;font-size:20px;color:var(--brown-400);
-    cursor:pointer;line-height:1;
-  }
-  .field{margin-bottom:14px;}
-  .field label{
-    display:block;font-size:12px;color:var(--brown-400);margin-bottom:6px;
-  }
-  .field input, .field textarea{
-    width:100%;padding:10px 12px;
-    border:1px solid var(--brown-200);border-radius:10px;
-    font-size:14px;font-family:inherit;
-    background:var(--cream);color:var(--brown-900);
-  }
-  .field textarea{resize:vertical;min-height:60px;}
-  .hint{font-size:11px;color:var(--brown-400);margin-top:6px;line-height:1.5;}
-  .hint a{color:var(--amber-dark);}
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; border-top: 1px dashed #DED2B7; margin-bottom: 14px; }
+  .total-label { font-size: 13px; color: #5C6B62; }
+  .total-num { font-size: 19px; font-weight: 700; color: #16302B; }
 
-  .masked-row{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:10px 12px;background:var(--cream);
-    border:1px solid var(--brown-200);border-radius:10px;
-    font-size:14px;
-  }
-  .masked-row .dots{letter-spacing:2px;color:var(--brown-400);}
-  .masked-row .status{color:var(--matcha-dark);font-size:12px;}
-  .link-btn{
-    background:none;border:none;color:var(--amber-dark);
-    font-size:13px;cursor:pointer;text-decoration:underline;padding:0;
-  }
+  .error-text { color: #C0562A; font-size: 11.5px; margin-top: 6px; display: none; align-items: center; gap: 4px; }
+  .error-text.show { display: flex; }
 
-  .primary-btn{
-    width:100%;padding:13px;border:none;border-radius:12px;
-    background:var(--amber);color:#fff;font-size:15px;font-weight:500;
-    cursor:pointer;margin-top:6px;
-  }
-  .primary-btn:disabled{background:var(--brown-200);color:var(--brown-400);}
-  .primary-btn:active{transform:scale(0.98);}
+  .success-wrap { text-align: center; padding: 20px 6px 6px 6px; }
+  .success-icon { width: 56px; height: 56px; border-radius: 50%; background: #E4F1E8; color: #2E6E4E; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; font-size: 26px; }
+  .success-title { font-family: 'Noto Serif SC', serif; font-weight: 700; font-size: 17px; color: #16302B; margin-bottom: 6px; }
+  .success-sub { font-size: 12.5px; color: #8B8577; margin-bottom: 20px; }
 
-  .ghost-btn{
-    width:100%;padding:11px;border:1px solid var(--brown-200);border-radius:12px;
-    background:none;color:var(--brown-700);font-size:14px;
-    cursor:pointer;margin-top:8px;
-  }
-
-  .order-line{
-    display:flex;justify-content:space-between;font-size:13px;
-    padding:6px 0;border-bottom:1px dashed var(--brown-200);
-  }
-  .order-total{
-    display:flex;justify-content:space-between;font-size:15px;font-weight:700;
-    padding-top:10px;margin-top:4px;
-  }
-
-  .toast{
-    position:fixed;top:16px;left:50%;transform:translateX(-50%);
-    background:var(--brown-900);color:#fff;padding:10px 18px;
-    border-radius:10px;font-size:13px;z-index:50;
-    opacity:0;pointer-events:none;transition:opacity 0.2s;
-  }
-  .toast.show{opacity:1;}
-  .toast.error{background:var(--red);}
-  .toast.ok{background:var(--matcha-dark);}
+  .spin { display: inline-block; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none !important; }
 </style>
-</head>
-<body>
 
-<div class="wrap">
-  <header>
-    <div class="gear" id="gearBtn" title="设置">⚙</div>
-    <h1>茶 香 屋</h1>
-    <div class="tagline">CHÁ XIĀNG WŪ · 手作茶饮</div>
-    <div class="divider"></div>
-  </header>
+<div id="shell">
+  <div class="topbar">
+    <span class="brand">浮光茶集</span>
+    <button class="icon-btn-top" id="btn-settings" aria-label="设置">⚙</button>
+  </div>
 
-  <div id="menu"></div>
+  <div class="hero">
+    <div class="hero-mark">
+      <svg width="34" height="46" viewBox="0 0 34 46">
+        <path d="M9 44c-4-4-4-8 0-12s4-8 0-12" stroke="#C69A4B" stroke-width="2" fill="none" stroke-linecap="round" class="wisp wisp-a" />
+        <path d="M20 44c-4-4-4-8 0-12s4-8 0-12" stroke="#E2672A" stroke-width="2" fill="none" stroke-linecap="round" class="wisp wisp-b" />
+      </svg>
+    </div>
+    <div class="hero-title">浮光茶集</div>
+    <div class="hero-sub">现制茶饮 · 慢煮咖啡</div>
+  </div>
+
+  <div class="panel" id="panel"></div>
 </div>
 
 <div class="cartbar" id="cartbar">
-  <div>
-    <div class="left" id="cartCount">已选 0 件</div>
-    <div class="total" id="cartTotal">¥0</div>
+  <div class="cartbar-inner">
+    <div class="cartbar-left">
+      <span class="cartbar-badge" id="cartbar-count">0</span>
+      <span class="cartbar-total" id="cartbar-total">¥0</span>
+    </div>
+    <button class="cartbar-btn" id="btn-view-cart">查看订单 ›</button>
   </div>
-  <button id="goCheckout">去下单</button>
+</div>
+
+<!-- Quick add modal -->
+<div class="overlay" id="overlay-add">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-title" id="add-name"></div>
+        <div class="sheet-desc" id="add-desc"></div>
+      </div>
+      <button class="icon-btn" id="add-close">✕</button>
+    </div>
+    <div class="field-block">
+      <div class="field-label">温度</div>
+      <div class="chip-row" id="add-temps"></div>
+    </div>
+    <div class="field-block">
+      <div class="field-label">甜度</div>
+      <div class="chip-row" id="add-sweets"></div>
+    </div>
+    <div class="qty-row">
+      <div class="field-label">数量</div>
+      <div class="stepper">
+        <button class="icon-btn" id="add-minus">–</button>
+        <span class="qty-num" id="add-qty">1</span>
+        <button class="icon-btn" id="add-plus">+</button>
+      </div>
+    </div>
+    <button class="primary-btn" id="add-confirm">加入订单</button>
+  </div>
 </div>
 
 <!-- Settings modal -->
-<div class="overlay" id="settingsOverlay">
+<div class="overlay" id="overlay-settings">
   <div class="sheet">
-    <span class="close" id="closeSettings">×</span>
-    <h2>Telegram 通知设置</h2>
-    <p class="hint">下单后订单会通过 Telegram 机器人发送给你。信息保存在你本机浏览器中，页面上只会显示是否已设置，不会显示具体内容。</p>
+    <div class="sheet-head">
+      <div class="sheet-title">店主设置 · 订单通知</div>
+      <button class="icon-btn" id="settings-close">✕</button>
+    </div>
+    <div id="settings-body"></div>
+  </div>
+</div>
 
-    <div class="field" id="tokenField"></div>
-    <div class="field" id="chatIdField"></div>
-
-    <button class="primary-btn" id="saveSettings">保存设置</button>
-    <p class="hint">还没有机器人？在 Telegram 搜索 <b>@BotFather</b> 发送 /newbot 创建，再给 <b>@userinfobot</b> 发消息获取你的 Chat ID。</p>
+<!-- Cart modal -->
+<div class="overlay" id="overlay-cart">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="sheet-title">我的订单</div>
+      <button class="icon-btn" id="cart-close">✕</button>
+    </div>
+    <div id="cart-body"></div>
   </div>
 </div>
 
 <!-- Checkout modal -->
-<div class="overlay" id="checkoutOverlay">
+<div class="overlay" id="overlay-checkout">
   <div class="sheet">
-    <span class="close" id="closeCheckout">×</span>
-    <h2>确认订单</h2>
-    <div id="orderLines"></div>
-    <div class="order-total"><span>合计</span><span id="orderTotal">¥0</span></div>
-
-    <div class="field" style="margin-top:16px;">
-      <label>称呼</label>
-      <input type="text" id="custName" placeholder="怎么称呼你">
-      <p class="hint" id="nameError" style="display:none;color:var(--red);">请填写称呼后再下单</p>
-    </div>
-    <div class="field">
-      <label>手机号</label>
-      <input type="tel" id="custPhone" placeholder="方便联系你取餐">
-      <p class="hint" id="phoneError" style="display:none;color:var(--red);">请填写手机号后再下单</p>
-    </div>
-    <div class="field">
-      <label>备注（选填）</label>
-      <textarea id="custNote" placeholder="少冰 / 不要糖 / 取餐时间 等"></textarea>
-    </div>
-
-    <button class="primary-btn" id="sendOrder">发送订单</button>
+    <div id="checkout-body"></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
-const DRINKS = [
-  {id:'d1', icon:'🧋', img:'', name:'珍珠奶茶', desc:'经典手打黑糖珍珠', price:16},
-  {id:'d2', icon:'🍑', img:'', name:'白桃乌龙', desc:'冷萃乌龙 · 鲜桃果肉', price:18},
-  {id:'d3', icon:'🍵', img:'', name:'抹茶拿铁', desc:'京都抹茶 · 鲜牛乳', price:20},
-  {id:'d4', icon:'🍊', img:'', name:'四季春茶', desc:'原叶冷泡 · 无糖可选', price:12},
-  {id:'d5', icon:'🍓', img:'', name:'草莓芝士', desc:'新鲜草莓 · 芝士奶盖', price:22},
-  {id:'d6', icon:'🥭', img:'', name:'芒果椰椰', desc:'芒果果泥 · 椰浆基底', price:19},
-];
+(function () {
+  const MENU = [
+    { category: "经典奶茶", items: [
+      { id: "m1", name: "珍珠奶茶", desc: "醇厚锡兰红茶 · 手熬黑糖珍珠", price: 15 },
+      { id: "m2", name: "芋泥波波", desc: "槟榔芋头现打 · 椰浆基底", price: 18 },
+      { id: "m3", name: "抹茶拿铁", desc: "宇治抹茶 · 鲜牛乳", price: 17 },
+      { id: "m4", name: "红豆奶茶", desc: "蜜红豆 · 阿萨姆红茶", price: 16 },
+    ]},
+    { category: "鲜果茶", items: [
+      { id: "f1", name: "满杯百香果", desc: "三颗鲜百香果 · 蜂蜜", price: 19 },
+      { id: "f2", name: "芒果冰沙", desc: "冻芒果现打 · 无添加水", price: 20 },
+      { id: "f3", name: "手打柠檬茶", desc: "现切柠檬 · 蜜渍风味", price: 14 },
+    ]},
+    { category: "经典咖啡", items: [
+      { id: "c1", name: "美式咖啡", desc: "双份浓缩 · 冷萃可选", price: 12 },
+      { id: "c2", name: "招牌拿铁", desc: "意式浓缩 · 鲜奶拉花", price: 16 },
+      { id: "c3", name: "生椰拿铁", desc: "厚椰乳 · 意式浓缩", price: 18 },
+    ]},
+  ];
+  const TEMPS = ["冰", "常温", "热"];
+  const SWEETS = ["全糖", "半糖", "微糖", "无糖"];
 
-let cart = {}; // id -> qty
+  let cart = [];
+  let activeItem = null;
+  let addTemp = "冰", addSweet = "半糖", addQty = 1;
+  let tgStatus = "loading"; // loading | unset | set
+  let tgConfig = null;
+  let sendState = "idle";
 
-function renderMenu(){
-  const menu = document.getElementById('menu');
-  menu.innerHTML = '<div class="section-title">全部饮品</div>';
-  DRINKS.forEach(d=>{
-    const qty = cart[d.id] || 0;
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="card-icon">${d.img ? `<img src="${d.img}" alt="${d.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : d.icon}</div>
-      <div class="card-info">
-        <p class="card-name">${d.name}</p>
-        <p class="card-desc">${d.desc}</p>
-        <p class="card-price">¥${d.price}</p>
-      </div>
-      <div class="stepper">
-        <button data-act="minus" data-id="${d.id}">−</button>
-        <span id="qty-${d.id}">${qty}</span>
-        <button data-act="plus" data-id="${d.id}">+</button>
-      </div>
-    `;
-    menu.appendChild(card);
+  const $ = (id) => document.getElementById(id);
+
+  /* ---------- menu render ---------- */
+  function renderMenu() {
+    const panel = $("panel");
+    panel.innerHTML = "";
+    MENU.forEach((cat) => {
+      const title = document.createElement("div");
+      title.className = "cat-title";
+      title.textContent = cat.category;
+      panel.appendChild(title);
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      cat.items.forEach((item) => {
+        const card = document.createElement("button");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-name">${item.name}</div>
+          <div class="card-desc">${item.desc}</div>
+          <div class="card-foot">
+            <span class="card-price">¥${item.price}</span>
+            <span class="add-dot">+</span>
+          </div>`;
+        card.addEventListener("click", () => openAdd(item));
+        grid.appendChild(card);
+      });
+      panel.appendChild(grid);
+    });
+  }
+
+  /* ---------- quick add modal ---------- */
+  function openAdd(item) {
+    activeItem = item;
+    addTemp = "冰"; addSweet = "半糖"; addQty = 1;
+    $("add-name").textContent = item.name;
+    $("add-desc").textContent = item.desc;
+    renderChips("add-temps", TEMPS, addTemp, (v) => { addTemp = v; renderChips("add-temps", TEMPS, addTemp, arguments.callee); });
+    renderAddChips();
+    $("add-qty").textContent = addQty;
+    $("overlay-add").classList.add("open");
+  }
+  function renderAddChips() {
+    renderChips("add-temps", TEMPS, addTemp, (v) => { addTemp = v; renderAddChips(); });
+    renderChips("add-sweets", SWEETS, addSweet, (v) => { addSweet = v; renderAddChips(); });
+    renderConfirmLabel();
+  }
+  function renderChips(containerId, options, selected, onPick) {
+    const el = $(containerId);
+    el.innerHTML = "";
+    options.forEach((opt) => {
+      const b = document.createElement("button");
+      b.className = "chip" + (opt === selected ? " chip-on" : "");
+      b.textContent = opt;
+      b.addEventListener("click", () => onPick(opt));
+      el.appendChild(b);
+    });
+  }
+  function renderConfirmLabel() {
+    if (!activeItem) return;
+    $("add-confirm").textContent = `加入订单 · ¥${activeItem.price * addQty}`;
+  }
+  $("add-minus").addEventListener("click", () => { addQty = Math.max(1, addQty - 1); $("add-qty").textContent = addQty; renderConfirmLabel(); });
+  $("add-plus").addEventListener("click", () => { addQty += 1; $("add-qty").textContent = addQty; renderConfirmLabel(); });
+  $("add-close").addEventListener("click", () => $("overlay-add").classList.remove("open"));
+  $("overlay-add").addEventListener("click", (e) => { if (e.target.id === "overlay-add") $("overlay-add").classList.remove("open"); });
+  $("add-confirm").addEventListener("click", () => {
+    const key = `${activeItem.id}-${addTemp}-${addSweet}`;
+    const found = cart.find((c) => c.key === key);
+    if (found) found.qty += addQty;
+    else cart.push({ ...activeItem, temp: addTemp, sweet: addSweet, qty: addQty, key });
+    $("overlay-add").classList.remove("open");
+    updateCartBar();
   });
-  menu.querySelectorAll('button[data-act]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const id = btn.dataset.id;
-      const act = btn.dataset.act;
-      const cur = cart[id] || 0;
-      const next = act === 'plus' ? cur + 1 : Math.max(0, cur - 1);
-      if(next === 0) delete cart[id]; else cart[id] = next;
-      document.getElementById(`qty-${id}`).textContent = next;
-      updateCartBar();
-    });
-  });
-}
 
-function cartItems(){
-  return Object.entries(cart).map(([id, qty])=>{
-    const d = DRINKS.find(x=>x.id===id);
-    return {...d, qty, subtotal: d.price*qty};
-  });
-}
-
-function updateCartBar(){
-  const items = cartItems();
-  const count = items.reduce((s,i)=>s+i.qty,0);
-  const total = items.reduce((s,i)=>s+i.subtotal,0);
-  document.getElementById('cartCount').textContent = `已选 ${count} 件`;
-  document.getElementById('cartTotal').textContent = `¥${total}`;
-  document.getElementById('cartbar').classList.toggle('show', count > 0);
-}
-
-function showToast(msg, type){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (type ? ' '+type : '');
-  setTimeout(()=>{ t.className = 'toast'; }, 2600);
-}
-
-/* ---------- Settings (Telegram token / chat id), masked in UI ---------- */
-let settings = { token:'8939398684:AAGmsjumYDRjiARlGGVkDscjWybnxzy272Q', chatId:'1949334561' };
-
-function fieldHTML(label, id, placeholder){
-  return `<label>${label}</label><input type="password" id="${id}" placeholder="${placeholder}" autocomplete="off">`;
-}
-
-function renderSettingsFields(){
-  const tokenField = document.getElementById('tokenField');
-  const chatField = document.getElementById('chatIdField');
-
-  if(settings.token){
-    tokenField.innerHTML = `
-      <label>机器人 Token</label>
-      <div class="masked-row">
-        <span class="dots">•••••••••••••••</span>
-        <span class="status">已设置 ✓</span>
-      </div>
-      <button class="link-btn" id="changeToken" style="margin-top:6px;">更改</button>
-    `;
-    document.getElementById('changeToken').addEventListener('click', ()=>{
-      tokenField.innerHTML = fieldHTML('机器人 Token', 'tokenInput', '输入新的 Bot Token');
-    });
-  } else {
-    tokenField.innerHTML = fieldHTML('机器人 Token', 'tokenInput', '从 @BotFather 获取');
-  }
-
-  if(settings.chatId){
-    chatField.innerHTML = `
-      <label>Chat ID</label>
-      <div class="masked-row">
-        <span class="dots">•••••••••</span>
-        <span class="status">已设置 ✓</span>
-      </div>
-      <button class="link-btn" id="changeChatId" style="margin-top:6px;">更改</button>
-    `;
-    document.getElementById('changeChatId').addEventListener('click', ()=>{
-      chatField.innerHTML = fieldHTML('Chat ID', 'chatIdInput', '输入新的 Chat ID');
-    });
-  } else {
-    chatField.innerHTML = fieldHTML('Chat ID', 'chatIdInput', '从 @userinfobot 获取');
-  }
-}
-
-async function loadSettings(){
-  try{
-    const t = await window.storage.get('tg_token', false);
-    const c = await window.storage.get('tg_chat_id', false);
-    settings.token = t ? t.value : '';
-    settings.chatId = c ? c.value : '';
-  }catch(e){
-    // no settings saved yet
-  }
-  renderSettingsFields();
-}
-
-document.getElementById('saveSettings').addEventListener('click', async ()=>{
-  const tokenInput = document.getElementById('tokenInput');
-  const chatIdInput = document.getElementById('chatIdInput');
-  let changed = false;
-
-  try{
-    if(tokenInput && tokenInput.value.trim()){
-      await window.storage.set('tg_token', tokenInput.value.trim(), false);
-      settings.token = tokenInput.value.trim();
-      changed = true;
-    }
-    if(chatIdInput && chatIdInput.value.trim()){
-      await window.storage.set('tg_chat_id', chatIdInput.value.trim(), false);
-      settings.chatId = chatIdInput.value.trim();
-      changed = true;
-    }
-    renderSettingsFields();
-    showToast(changed ? '设置已保存' : '没有改动', changed ? 'ok' : null);
-  }catch(e){
-    showToast('保存失败，请重试', 'error');
-  }
-});
-
-/* ---------- modals ---------- */
-document.getElementById('gearBtn').addEventListener('click', ()=>{
-  document.getElementById('settingsOverlay').classList.add('show');
-});
-document.getElementById('closeSettings').addEventListener('click', ()=>{
-  document.getElementById('settingsOverlay').classList.remove('show');
-});
-
-document.getElementById('goCheckout').addEventListener('click', ()=>{
-  renderOrderReview();
-  document.getElementById('checkoutOverlay').classList.add('show');
-});
-document.getElementById('closeCheckout').addEventListener('click', ()=>{
-  document.getElementById('checkoutOverlay').classList.remove('show');
-});
-
-function renderOrderReview(){
-  const items = cartItems();
-  const total = items.reduce((s,i)=>s+i.subtotal,0);
-  document.getElementById('orderLines').innerHTML = items.map(i=>
-    `<div class="order-line"><span>${i.icon} ${i.name} ×${i.qty}</span><span>¥${i.subtotal}</span></div>`
-  ).join('');
-  document.getElementById('orderTotal').textContent = `¥${total}`;
-}
-
-document.getElementById('custName').addEventListener('input', ()=>{
-  document.getElementById('nameError').style.display = 'none';
-});
-document.getElementById('custPhone').addEventListener('input', ()=>{
-  document.getElementById('phoneError').style.display = 'none';
-});
-
-document.getElementById('sendOrder').addEventListener('click', async ()=>{
-  const items = cartItems();
-  if(items.length === 0){
-    showToast('购物车是空的', 'error');
-    return;
-  }
-
-  const nameInput = document.getElementById('custName');
-  const nameError = document.getElementById('nameError');
-  const phoneInput = document.getElementById('custPhone');
-  const phoneError = document.getElementById('phoneError');
-
-  let hasError = false;
-  if(!nameInput.value.trim()){
-    nameError.style.display = 'block';
-    hasError = true;
-  } else {
-    nameError.style.display = 'none';
-  }
-  if(!phoneInput.value.trim()){
-    phoneError.style.display = 'block';
-    hasError = true;
-  } else {
-    phoneError.style.display = 'none';
-  }
-  if(hasError){
-    (nameInput.value.trim() ? phoneInput : nameInput).focus();
-    return;
-  }
-
-  if(!settings.token || !settings.chatId){
-    showToast('请先在设置中填写 Telegram Token 和 Chat ID', 'error');
-    document.getElementById('checkoutOverlay').classList.remove('show');
-    document.getElementById('settingsOverlay').classList.add('show');
-    return;
-  }
-
-  const name = document.getElementById('custName').value.trim();
-  const phone = document.getElementById('custPhone').value.trim();
-  const note = document.getElementById('custNote').value.trim();
-  const total = items.reduce((s,i)=>s+i.subtotal,0);
-
-  const lines = [
-    '🧋 新订单',
-    name ? `顾客：${name}` : null,
-    phone ? `手机号：${phone}` : null,
-    '——————————',
-    ...items.map(i=>`${i.name} ×${i.qty}  ¥${i.subtotal}`),
-    '——————————',
-    `合计：¥${total}`,
-    note ? `备注：${note}` : null,
-  ].filter(Boolean).join('\n');
-
-  const btn = document.getElementById('sendOrder');
-  btn.disabled = true;
-  btn.textContent = '发送中…';
-
-  try{
-    const res = await fetch(`https://api.telegram.org/bot${settings.token}/sendMessage`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ chat_id: settings.chatId, text: lines })
-    });
-    const data = await res.json();
-    if(data.ok){
-      showToast('订单已发送', 'ok');
-      cart = {};
-      renderMenu();
-      updateCartBar();
-      document.getElementById('checkoutOverlay').classList.remove('show');
-      document.getElementById('custName').value = '';
-      document.getElementById('custPhone').value = '';
-      document.getElementById('custNote').value = '';
+  /* ---------- cart bar + cart modal ---------- */
+  function cartTotal() { return cart.reduce((s, i) => s + i.price * i.qty, 0); }
+  function cartCount() { return cart.reduce((s, i) => s + i.qty, 0); }
+  function updateCartBar() {
+    const count = cartCount();
+    if (count > 0) {
+      $("cartbar").classList.add("open");
+      $("cartbar-count").textContent = count;
+      $("cartbar-total").textContent = `¥${cartTotal()}`;
     } else {
-      showToast('发送失败：' + (data.description || '请检查 Token / Chat ID'), 'error');
+      $("cartbar").classList.remove("open");
     }
-  }catch(e){
-    showToast('网络错误，发送失败', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '发送订单';
+    if ($("overlay-cart").classList.contains("open")) renderCartBody();
   }
-});
+  $("btn-view-cart").addEventListener("click", () => { renderCartBody(); $("overlay-cart").classList.add("open"); });
+  $("cart-close").addEventListener("click", () => $("overlay-cart").classList.remove("open"));
+  $("overlay-cart").addEventListener("click", (e) => { if (e.target.id === "overlay-cart") $("overlay-cart").classList.remove("open"); });
 
-renderMenu();
-updateCartBar();
-loadSettings();
+  function renderCartBody() {
+    const body = $("cart-body");
+    if (cart.length === 0) {
+      body.innerHTML = `<div class="empty-cart">还没有选购饮品呀</div>`;
+      return;
+    }
+    let html = `<div class="cart-list">`;
+    cart.forEach((i) => {
+      html += `
+        <div class="cart-row" data-key="${i.key}">
+          <div>
+            <div class="cart-row-name">${i.name}</div>
+            <div class="cart-row-meta">${i.temp} · ${i.sweet}</div>
+          </div>
+          <div class="cart-row-right">
+            <button class="icon-btn" data-act="minus" data-key="${i.key}">–</button>
+            <span class="qty-num">${i.qty}</span>
+            <button class="icon-btn" data-act="plus" data-key="${i.key}">+</button>
+            <span class="cart-price">¥${i.price * i.qty}</span>
+          </div>
+        </div>`;
+    });
+    html += `</div>
+      <div class="total-row"><span class="total-label">合计</span><span class="total-num">¥${cartTotal()}</span></div>
+      <button class="primary-btn" id="cart-checkout-btn">去下单</button>`;
+    body.innerHTML = html;
+
+    body.querySelectorAll('[data-act="minus"]').forEach((b) => b.addEventListener("click", () => changeQty(b.dataset.key, -1)));
+    body.querySelectorAll('[data-act="plus"]').forEach((b) => b.addEventListener("click", () => changeQty(b.dataset.key, 1)));
+    $("cart-checkout-btn").addEventListener("click", () => {
+      $("overlay-cart").classList.remove("open");
+      openCheckout();
+    });
+  }
+  function changeQty(key, delta) {
+    cart = cart.map((i) => i.key === key ? { ...i, qty: i.qty + delta } : i).filter((i) => i.qty > 0);
+    updateCartBar();
+    renderCartBody();
+  }
+
+  /* ---------- settings (Telegram token / chat id) ---------- */
+  async function loadTgConfig() {
+    try {
+      const res = await window.storage.get("tg-config", false);
+      if (res && res.value) {
+        tgConfig = JSON.parse(res.value);
+        tgStatus = "set";
+      } else {
+        tgStatus = "unset";
+      }
+    } catch (e) {
+      tgStatus = "unset";
+    }
+  }
+  async function saveTgConfig(token, chatId) {
+    await window.storage.set("tg-config", JSON.stringify({ token, chatId }), false);
+    tgConfig = { token, chatId };
+    tgStatus = "set";
+  }
+  async function clearTgConfig() {
+    try { await window.storage.delete("tg-config", false); } catch (e) {}
+    tgConfig = null;
+    tgStatus = "unset";
+  }
+  async function sendToTelegram(text) {
+    if (!tgConfig) throw new Error("尚未配置通知");
+    const res = await fetch(`https://api.telegram.org/bot${tgConfig.token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: tgConfig.chatId, text }),
+    });
+    if (!res.ok) throw new Error("发送失败");
+    return res.json();
+  }
+
+  function renderSettingsBody() {
+    const body = $("settings-body");
+    if (tgStatus === "set") {
+      body.innerHTML = `
+        <div class="settings-ok">✓ 已配置 Telegram 通知</div>
+        <p class="settings-note">出于安全考虑，已保存的凭证不会在此处显示。如需更换，请先清除后重新填写。</p>
+        <button class="ghost-btn" id="settings-clear">清除并重新设置</button>`;
+      $("settings-clear").addEventListener("click", async () => { await clearTgConfig(); renderSettingsBody(); });
+    } else {
+      body.innerHTML = `
+        <p class="settings-note">这些信息只会保存在本机、用于把订单发送到你的 Telegram，不会在应用的任何地方显示出来。</p>
+        <div class="field-block">
+          <div class="field-label">Bot Token</div>
+          <input type="password" autocomplete="off" class="text-input" id="settings-token" placeholder="输入一次即可，不会再显示" />
+        </div>
+        <div class="field-block">
+          <div class="field-label">Chat ID</div>
+          <input type="password" autocomplete="off" class="text-input" id="settings-chatid" placeholder="接收订单消息的对话 ID" />
+        </div>
+        <button class="primary-btn" id="settings-save" disabled>保存设置</button>`;
+      const tokenInput = $("settings-token"), chatInput = $("settings-chatid"), saveBtn = $("settings-save");
+      const toggle = () => { saveBtn.disabled = !(tokenInput.value.trim() && chatInput.value.trim()); };
+      tokenInput.addEventListener("input", toggle);
+      chatInput.addEventListener("input", toggle);
+      saveBtn.addEventListener("click", async () => {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "保存中…";
+        await saveTgConfig(tokenInput.value.trim(), chatInput.value.trim());
+        renderSettingsBody();
+      });
+    }
+  }
+  $("btn-settings").addEventListener("click", () => { renderSettingsBody(); $("overlay-settings").classList.add("open"); });
+  $("settings-close").addEventListener("click", () => $("overlay-settings").classList.remove("open"));
+  $("overlay-settings").addEventListener("click", (e) => { if (e.target.id === "overlay-settings") $("overlay-settings").classList.remove("open"); });
+
+  /* ---------- checkout ---------- */
+  function openCheckout() {
+    sendState = "idle";
+    renderCheckoutBody();
+    $("overlay-checkout").classList.add("open");
+  }
+  function renderCheckoutBody() {
+    const body = $("checkout-body");
+    if (sendState === "done") {
+      body.innerHTML = `
+        <div class="success-wrap">
+          <div class="success-icon">✓</div>
+          <div class="success-title">订单已发送</div>
+          <div class="success-sub">老板已收到通知，马上为您安排制作～</div>
+          <button class="primary-btn" id="checkout-reset">再点一单</button>
+        </div>`;
+      $("checkout-reset").addEventListener("click", resetOrder);
+      return;
+    }
+
+    body.innerHTML = `
+      <div class="sheet-head">
+        <div class="sheet-title">填写取餐信息</div>
+        <button class="icon-btn" id="checkout-close">✕</button>
+      </div>
+      ${tgStatus === "unset" ? `<div class="error-text show">⚠ 店铺尚未开启订单通知，请联系店主先完成设置</div>` : ""}
+      <div class="field-block">
+        <div class="field-label">姓名 *</div>
+        <input class="text-input" id="co-name" placeholder="怎么称呼您" />
+        <div class="error-text" id="co-name-err">⚠ 请填写姓名</div>
+      </div>
+      <div class="field-block">
+        <div class="field-label">电话号码 *</div>
+        <input class="text-input" id="co-phone" placeholder="方便店家联系您" inputmode="tel" />
+        <div class="error-text" id="co-phone-err">⚠ 电话号码格式不太对</div>
+      </div>
+      <div class="field-block">
+        <div class="field-label">备注（选填）</div>
+        <input class="text-input" id="co-note" placeholder="少冰、不要吸管…" />
+      </div>
+      <div class="total-row"><span class="total-label">合计 · ${cartCount()} 件</span><span class="total-num">¥${cartTotal()}</span></div>
+      <div class="error-text" id="co-send-err">⚠ 发送失败，请稍后重试或联系店主</div>
+      <button class="primary-btn" id="co-submit" ${tgStatus !== "set" ? "disabled" : ""}>提交订单</button>`;
+
+    $("checkout-close").addEventListener("click", () => $("overlay-checkout").classList.remove("open"));
+    $("co-submit").addEventListener("click", submitOrder);
+  }
+  $("overlay-checkout").addEventListener("click", (e) => { if (e.target.id === "overlay-checkout" && sendState !== "sending") $("overlay-checkout").classList.remove("open"); });
+
+  async function submitOrder() {
+    const name = $("co-name").value.trim();
+    const phone = $("co-phone").value.trim();
+    const note = $("co-note").value.trim();
+    let ok = true;
+    $("co-name-err").classList.remove("show");
+    $("co-phone-err").classList.remove("show");
+    if (!name) { $("co-name-err").classList.add("show"); ok = false; }
+    if (!phone || !/^[\d+\-\s]{6,20}$/.test(phone)) { $("co-phone-err").classList.add("show"); ok = false; }
+    if (!ok) return;
+
+    sendState = "sending";
+    const btn = $("co-submit");
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spin">⟳</span> 提交中…`;
+    $("co-send-err").classList.remove("show");
+
+    const lines = cart.map((i) => `· ${i.name}（${i.temp}/${i.sweet}）x${i.qty} — ¥${i.price * i.qty}`);
+    const text = ["🧋 新订单", `顾客：${name}`, `电话：${phone}`, "", ...lines, "", `合计：¥${cartTotal()}`, note ? `备注：${note}` : null]
+      .filter(Boolean).join("\n");
+
+    try {
+      await sendToTelegram(text);
+      sendState = "done";
+      renderCheckoutBody();
+    } catch (e) {
+      sendState = "error";
+      $("co-send-err").classList.add("show");
+      btn.disabled = false;
+      btn.textContent = "提交订单";
+      sendState = "idle";
+    }
+  }
+  function resetOrder() {
+    cart = [];
+    updateCartBar();
+    $("overlay-checkout").classList.remove("open");
+  }
+
+  /* ---------- init ---------- */
+  renderMenu();
+  loadTgConfig();
+})();
 </script>
-</body>
-</html>
