@@ -286,12 +286,13 @@
 
 <script>
 const DRINKS = [
-  {id:'d1', icon:'🧋', img:'', name:'珍珠奶茶', desc:'经典手打黑糖珍珠', price:16},
-  {id:'d2', icon:'🍑', img:'', name:'白桃乌龙', desc:'冷萃乌龙 · 鲜桃果肉', price:18},
-  {id:'d3', icon:'🍵', img:'', name:'抹茶拿铁', desc:'京都抹茶 · 鲜牛乳', price:20},
-  {id:'d4', icon:'🍊', img:'', name:'四季春茶', desc:'原叶冷泡 · 无糖可选', price:12},
-  {id:'d5', icon:'🍓', img:'', name:'草莓芝士', desc:'新鲜草莓 · 芝士奶盖', price:22},
-  {id:'d6', icon:'🥭', img:'', name:'芒果椰椰', desc:'芒果果泥 · 椰浆基底', price:19},
+  {id:'d1', icon:'🧋', img:'', name:'珍珠奶茶', desc:'经典手打黑糖珍珠', price:9500},
+  {id:'d2', icon:'🍑', img:'', name:'白桃乌龙', desc:'冷萃乌龙 · 鲜桃果肉', price:9500},
+  {id:'d3', icon:'🍵', img:'', name:'抹茶拿铁', desc:'京都抹茶 · 鲜牛乳', price:9500},
+  {id:'d4', icon:'🍊', img:'', name:'四季春茶', desc:'原叶冷泡 · 无糖可选', price:9000},
+  {id:'d5', icon:'🍓', img:'', name:'草莓芝士', desc:'新鲜草莓 · 芝士奶盖', price:10000},
+  {id:'d6', icon:'🥭', img:'', name:'芒果椰椰', desc:'芒果果泥 · 椰浆基底', price:9500},
+  {id:'d6', icon:'', img:'', name:'西瓜椰耶', desc:'西瓜果泥 · 椰浆基底', price:9500},
 ];
 
 let cart = {}; // id -> qty
@@ -308,7 +309,7 @@ function renderMenu(){
       <div class="card-info">
         <p class="card-name">${d.name}</p>
         <p class="card-desc">${d.desc}</p>
-        <p class="card-price">¥${d.price}</p>
+        <p class="card-price">kyat${d.price}</p>
       </div>
       <div class="stepper">
         <button data-act="minus" data-id="${d.id}">−</button>
@@ -343,7 +344,7 @@ function updateCartBar(){
   const count = items.reduce((s,i)=>s+i.qty,0);
   const total = items.reduce((s,i)=>s+i.subtotal,0);
   document.getElementById('cartCount').textContent = `已选 ${count} 件`;
-  document.getElementById('cartTotal').textContent = `¥${total}`;
+  document.getElementById('cartTotal').textContent = `kyat${total}`;
   document.getElementById('cartbar').classList.toggle('show', count > 0);
 }
 
