@@ -245,7 +245,7 @@
   <div class="sheet">
     <span class="close" id="closeSettings">×</span>
     <h2>Telegram 通知设置</h2>
-   <p class="hint">下单后订单会通过 Telegram 机器人发送给你。信息保存在你本机浏览器中，页面上只会显示是否已设置，不会显示具体内容。</p>
+    <p class="hint">下单后订单会通过 Telegram 机器人发送给你。信息保存在你本机浏览器中，页面上只会显示是否已设置，不会显示具体内容。</p>
 
     <div class="field" id="tokenField"></div>
     <div class="field" id="chatIdField"></div>
@@ -262,7 +262,7 @@
     <h2>确认订单</h2>
     <div id="orderLines"></div>
     <div class="order-total"><span>合计</span><span id="orderTotal">¥0</span></div>
- 
+
     <div class="field" style="margin-top:16px;">
       <label>称呼</label>
       <input type="text" id="custName" placeholder="怎么称呼你">
@@ -277,21 +277,21 @@
       <label>备注（选填）</label>
       <textarea id="custNote" placeholder="少冰 / 不要糖 / 取餐时间 等"></textarea>
     </div>
- 
+
     <button class="primary-btn" id="sendOrder">发送订单</button>
   </div>
 </div>
 
-    <div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div>
 
 <script>
 const DRINKS = [
-  {id:'d1', icon:'🍑', name:'珍珠奶茶', desc:'经典手打黑糖珍珠', price:16},
-  {id:'d2', icon:'🍑', name:'白桃乌龙', desc:'冷萃乌龙 · 鲜桃果肉', price:18},
-  {id:'d3', icon:'🍵', name:'抹茶拿铁', desc:'京都抹茶 · 鲜牛乳', price:20},
-  {id:'d4', icon:'🍊', name:'四季春茶', desc:'原叶冷泡 · 无糖可选', price:12},
-  {id:'d5', icon:'🍓', name:'草莓芝士', desc:'新鲜草莓 · 芝士奶盖', price:22},
-  {id:'d6', icon:'🥭', name:'芒果椰椰', desc:'芒果果泥 · 椰浆基底', price:19},
+  {id:'d1', icon:'🧋', img:'', name:'珍珠奶茶', desc:'经典手打黑糖珍珠', price:16},
+  {id:'d2', icon:'🍑', img:'', name:'白桃乌龙', desc:'冷萃乌龙 · 鲜桃果肉', price:18},
+  {id:'d3', icon:'🍵', img:'', name:'抹茶拿铁', desc:'京都抹茶 · 鲜牛乳', price:20},
+  {id:'d4', icon:'🍊', img:'', name:'四季春茶', desc:'原叶冷泡 · 无糖可选', price:12},
+  {id:'d5', icon:'🍓', img:'', name:'草莓芝士', desc:'新鲜草莓 · 芝士奶盖', price:22},
+  {id:'d6', icon:'🥭', img:'', name:'芒果椰椰', desc:'芒果果泥 · 椰浆基底', price:19},
 ];
 
 let cart = {}; // id -> qty
@@ -304,7 +304,7 @@ function renderMenu(){
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-      <div class="card-icon">${d.icon}</div>
+      <div class="card-icon">${d.img ? `<img src="${d.img}" alt="${d.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : d.icon}</div>
       <div class="card-info">
         <p class="card-name">${d.name}</p>
         <p class="card-desc">${d.desc}</p>
@@ -343,7 +343,7 @@ function updateCartBar(){
   const count = items.reduce((s,i)=>s+i.qty,0);
   const total = items.reduce((s,i)=>s+i.subtotal,0);
   document.getElementById('cartCount').textContent = `已选 ${count} 件`;
-  document.getElementById('cartTotal').textContent = `ks${total}`;
+  document.getElementById('cartTotal').textContent = `¥${total}`;
   document.getElementById('cartbar').classList.toggle('show', count > 0);
 }
 
@@ -458,12 +458,43 @@ function renderOrderReview(){
   document.getElementById('orderTotal').textContent = `¥${total}`;
 }
 
+document.getElementById('custName').addEventListener('input', ()=>{
+  document.getElementById('nameError').style.display = 'none';
+});
+document.getElementById('custPhone').addEventListener('input', ()=>{
+  document.getElementById('phoneError').style.display = 'none';
+});
+
 document.getElementById('sendOrder').addEventListener('click', async ()=>{
   const items = cartItems();
   if(items.length === 0){
     showToast('购物车是空的', 'error');
     return;
   }
+
+  const nameInput = document.getElementById('custName');
+  const nameError = document.getElementById('nameError');
+  const phoneInput = document.getElementById('custPhone');
+  const phoneError = document.getElementById('phoneError');
+
+  let hasError = false;
+  if(!nameInput.value.trim()){
+    nameError.style.display = 'block';
+    hasError = true;
+  } else {
+    nameError.style.display = 'none';
+  }
+  if(!phoneInput.value.trim()){
+    phoneError.style.display = 'block';
+    hasError = true;
+  } else {
+    phoneError.style.display = 'none';
+  }
+  if(hasError){
+    (nameInput.value.trim() ? phoneInput : nameInput).focus();
+    return;
+  }
+
   if(!settings.token || !settings.chatId){
     showToast('请先在设置中填写 Telegram Token 和 Chat ID', 'error');
     document.getElementById('checkoutOverlay').classList.remove('show');
@@ -472,12 +503,14 @@ document.getElementById('sendOrder').addEventListener('click', async ()=>{
   }
 
   const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
   const note = document.getElementById('custNote').value.trim();
   const total = items.reduce((s,i)=>s+i.subtotal,0);
 
   const lines = [
     '🧋 新订单',
     name ? `顾客：${name}` : null,
+    phone ? `手机号：${phone}` : null,
     '——————————',
     ...items.map(i=>`${i.name} ×${i.qty}  ¥${i.subtotal}`),
     '——————————',
@@ -503,6 +536,7 @@ document.getElementById('sendOrder').addEventListener('click', async ()=>{
       updateCartBar();
       document.getElementById('checkoutOverlay').classList.remove('show');
       document.getElementById('custName').value = '';
+      document.getElementById('custPhone').value = '';
       document.getElementById('custNote').value = '';
     } else {
       showToast('发送失败：' + (data.description || '请检查 Token / Chat ID'), 'error');
