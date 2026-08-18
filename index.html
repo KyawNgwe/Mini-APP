@@ -287,12 +287,12 @@
 <script>
 const DRINKS = [
   {id:'d1', icon:' ', img:'https://th.bing.com/th/id/OIP.CnLoaGmwo4q3ZNCUPCsMcgHaOE?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3', name:'珍珠奶茶', desc:'经典手打黑糖珍珠', price:9500},
-  {id:'d2', icon:'🍑', img:'https://cbu01.alicdn.com/img/ibank/2020/438/956/15595659834_1528187615.jpg', name:'白桃乌龙', desc:'冷萃乌龙 · 鲜桃果肉', price:9500},
-  {id:'d3', icon:'🍵', img:'', name:'抹茶拿铁', desc:'京都抹茶 · 鲜牛乳', price:9500},
-  {id:'d4', icon:'🍊', img:'', name:'四季春茶', desc:'原叶冷泡 · 无糖可选', price:9000},
-  {id:'d5', icon:'🍓', img:'', name:'草莓芝士', desc:'新鲜草莓 · 芝士奶盖', price:10000},
-  {id:'d6', icon:'🥭', img:'', name:'芒果椰椰', desc:'芒果果泥 · 椰浆基底', price:9500},
-  {id:'d7', icon:'', img:'', name:'西瓜椰耶', desc:'西瓜果泥 · 椰浆基底', price:9500},
+  {id:'d2', icon:' ', img:'https://tse3.mm.bing.net/th/id/OIP.aDZoWPIPWFv23GXAcJkAHQHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3', name:'白桃乌龙', desc:'冷萃乌龙 · 鲜桃果肉', price:9500},
+  {id:'d3', icon:' ', img:'https://tse1.mm.bing.net/th/id/OIP.C3Os242sCCu5WWJYawcyTwHaGE?r=0&rs=1&pid=ImgDetMain&o=7&rm=3', name:'抹茶拿铁', desc:'京都抹茶 · 鲜牛乳', price:9500},
+  {id:'d4', icon:' ', img:'https://th.bing.com/th/id/R.a07fe30dc083921ae96023dfbedca988?rik=7%2bloiLxGSSE3RQ&riu=http%3a%2f%2fimg.alicdn.com%2fi1%2f2381734888%2fO1CN01thxwo51lykRoP2dC5_!!2381734888.jpg&ehk=go8SSpcp5%2bc8PiJO2RxzRYeg0d18u0BbfFlaHDyCwb8%3d&risl=&pid=ImgRaw&r=0', name:'四季春茶', desc:'原叶冷泡 · 无糖可选', price:9000},
+  {id:'d5', icon:' ', img:'https://tse1.mm.bing.net/th/id/OIP.9OWlUyc-P02BpZKRD9DQYgHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3', name:'草莓芝士', desc:'新鲜草莓 · 芝士奶盖', price:10000},
+  {id:'d6', icon:' ', img:'https://th.bing.com/th/id/OIP.rXEGAn8Ry6kLeroozYwqrgHaKe?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3', name:'芒果椰椰', desc:'芒果果泥 · 椰浆基底', price:9500},
+  {id:'d7', icon:' ', img:'https://tse1.mm.bing.net/th/id/OIP.e2_XrWx7Z3gkaHt6SCizZgHaHo?r=0&rs=1&pid=ImgDetMain&o=7&rm=3', name:'西瓜椰耶', desc:'西瓜果泥 · 椰浆基底', price:9500},
 ];
 
 let cart = {}; // id -> qty
@@ -344,7 +344,7 @@ function updateCartBar(){
   const count = items.reduce((s,i)=>s+i.qty,0);
   const total = items.reduce((s,i)=>s+i.subtotal,0);
   document.getElementById('cartCount').textContent = `已选 ${count} 件`;
-  document.getElementById('cartTotal').textContent = `kyat${total}`;
+  document.getElementById('cartTotal').textContent = `ks${total}`;
   document.getElementById('cartbar').classList.toggle('show', count > 0);
 }
 
