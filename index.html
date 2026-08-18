@@ -1,362 +1,550 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ရွှေမြန်မာ စားသောက်ဆိုင် - Menu & Online Order</title>
+    <title>国韵茶饮 - 点单系统</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Myanmar:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        gold: {
-                            50: '#fffdf0',
-                            100: '#fefab8',
-                            400: '#fbbf24',
-                            500: '#d97706',
-                            600: '#b45309',
-                            700: '#78350f',
-                        },
-                        emeraldCustom: {
-                            600: '#059669',
-                            700: '#047857',
-                            800: '#065f46',
+                        brand: {
+                            50: '#f0f7f4',
+                            100: '#dbece3',
+                            500: '#2e7d32', // 墨绿/竹青色
+                            600: '#1b5e20',
+                            700: '#144117',
+                            gold: '#d4af37'  // 琥珀金
                         }
-                    },
-                    fontFamily: {
-                        burmese: ['"Noto Sans Myanmar"', 'Inter', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
     <style>
-        body {
-            font-family: 'Noto Sans Myanmar', 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
-        .hide-scrollbar::-webkit-scrollbar {
+        /* 隐藏滚动条 */
+        .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
-        .hide-scrollbar {
+        .no-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(12px);
-        }
     </style>
 </head>
-<body class="text-slate-800 bg-slate-50 min-h-screen pb-20">
+<body class="bg-gray-50 text-gray-800 pb-24 md:pb-6">
 
-    <header class="sticky top-0 z-40 bg-amber-900 text-amber-50 shadow-md">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-3 space-x-reverse">
-                <div class="w-10 h-10 rounded-full bg-amber-500 text-amber-950 flex items-center justify-center font-bold text-xl shadow-lg border-2 border-amber-300">
-                    <i class="fa-solid font-bold">ရွ</i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg md:text-xl tracking-wide leading-tight">ရွှေမြန်မာ စားသောက်ဆိုင်</h1>
-                    <p class="text-xs text-amber-300 font-light">Shwe Myanmar Fine Dining & Tea House</p>
-                </div>
+    <!-- 顶部导航栏 -->
+    <header class="bg-brand-600 text-white sticky top-0 z-30 shadow-md">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-mug-hot text-brand-gold text-2xl"></i>
+                <h1 class="text-xl font-bold tracking-wide">国韵茶饮店</h1>
             </div>
-
-            <div class="flex items-center space-x-3">
-                <!-- Telegram Config Button -->
-                <button onclick="toggleModal('telegramConfigModal')" class="p-2.5 rounded-full bg-amber-800 hover:bg-amber-700 text-amber-200 transition relative" title="Telegram စက်တင်">
-                    <i class="fa-brands fa-telegram text-lg"></i>
-                    <span id="telegramStatusDot" class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-amber-900" title="Telegram Connection Status"></span>
-                </button>
-
-                <!-- Cart Button -->
-                <button onclick="toggleCartDrawer()" class="p-2.5 rounded-full bg-amber-500 text-amber-950 hover:bg-amber-400 font-bold transition flex items-center space-x-2 px-4 shadow-md">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    <span class="text-sm">ဈေးခြင်း</span>
-                    <span id="cartBadgeCount" class="bg-amber-950 text-amber-400 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
-                </button>
+            <!-- 状态提示标签 -->
+            <div class="flex items-center space-x-1 text-xs bg-brand-700/60 px-3 py-1 rounded-full border border-brand-gold/30">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>营业中</span>
             </div>
         </div>
     </header>
 
-    <div class="bg-gradient-to-r from-amber-800 via-amber-700 to-amber-900 text-amber-100 text-xs md:text-sm py-2 px-4 text-center border-b border-amber-600/30">
-        <div class="max-w-6xl mx-auto flex items-center justify-center space-x-2">
-            <span class="bg-amber-500 text-amber-950 text-xs font-bold px-2 py-0.5 rounded">သတင်းကောင်း</span>
-            <span>အော်ဒါတင်ပြီးပါက Telegram သို့ ချက်ချင်းစာပို့ပေးပါမည်။ (လတ်ဆတ်ဆူပူသော မြန်မာ့ရိုးရာ အစားအစာများ)</span>
+    <!-- 顶部公告 -->
+    <div class="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800 flex items-center justify-between max-w-4xl mx-auto">
+        <div class="flex items-center space-x-2 overflow-hidden">
+            <i class="fa-solid fa-bell text-amber-600 flex-shrink-0"></i>
+            <span class="truncate">欢迎光临！请选择喜爱的饮品，下单后将自动发送至商家后台处理。</span>
         </div>
     </div>
 
-    <!-- MAIN CONTAINER -->
-    <main class="max-w-6xl mx-auto px-4 py-6">
+    <!-- 主体区域 -->
+    <main class="max-w-4xl mx-auto px-4 py-4 grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <section class="mb-6 space-y-4">
-            <!-- Search Bar -->
-            <div class="relative max-w-lg mx-auto md:mx-0">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                <input type="text" id="searchInput" oninput="filterMenu()" placeholder="ဟင်းလျာ သို့မဟုတ် သောက်စရာ ရှာဖွေရန်..." 
-                       class="w-full pl-11 pr-4 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm">
+        <!-- 左侧：饮品分类与菜单 -->
+        <div class="md:col-span-2 space-y-4">
+            <!-- 分类导航 -->
+            <div class="flex space-x-2 overflow-x-auto no-scrollbar pb-1">
+                <button onclick="filterCategory('all')" class="cat-btn active bg-brand-600 text-white px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shadow-sm">全部饮品</button>
+                <button onclick="filterCategory('milktea')" class="cat-btn bg-white text-gray-600 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap border border-gray-200">招牌奶茶</button>
+                <button onclick="filterCategory('fruittea')" class="cat-btn bg-white text-gray-600 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap border border-gray-200">鲜果茶系列</button>
+                <button onclick="filterCategory('traditional')" class="cat-btn bg-white text-gray-600 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap border border-gray-200">传统养生/纯茶</button>
             </div>
 
-            <!-- Categories Horizontal Scroll -->
-            <div class="flex items-center space-x-2 overflow-x-auto hide-scrollbar pb-2 pt-1" id="categoryContainer">
-                <!-- Javascript will inject categories here -->
+            <!-- 饮品列表 -->
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- JavaScript 动态生成 -->
             </div>
-        </section>
+        </div>
 
-        <section>
-            <div class="flex items-center justify-between mb-4">
-                <h2 id="currentCategoryTitle" class="text-xl font-bold text-slate-800 border-l-4 border-amber-600 pl-3">အားလုံး (Menu Items)</h2>
-                <span id="itemCountLabel" class="text-xs text-slate-500 font-medium">12 မျိုး ရှိပါသည်</span>
-            </div>
+        <!-- 右侧：购物车与结算 -->
+        <div class="md:col-span-1">
+            <div class="bg-white rounded-xl shadow-md border border-gray-100 p-4 sticky top-20">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-cart-shopping text-brand-600"></i>
+                        已选饮品
+                    </h2>
+                    <button onclick="clearCart()" class="text-xs text-gray-400 hover:text-red-500">清空</button>
+                </div>
 
-            <!-- Menu Cards Grid -->
-            <div id="menuGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                <!-- Javascript will render menu items here -->
+                <!-- 购物车饮品列表 -->
+                <div id="cart-items" class="max-h-60 overflow-y-auto divide-y divide-gray-100 my-2">
+                    <p class="text-center text-gray-400 py-8 text-sm">购物车是空的，快去选购吧~</p>
+                </div>
+
+                <!-- 费用与输入区 -->
+                <div class="border-t pt-3 space-y-2">
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>小计</span>
+                        <span id="subtotal-price">￥0.00</span>
+                    </div>
+                    <div class="flex justify-between text-base font-bold text-gray-900 border-t pt-2">
+                        <span>合计</span>
+                        <span id="total-price" class="text-brand-600 text-xl">￥0.00</span>
+                    </div>
+
+                    <!-- 订单信息填写 -->
+                    <div class="mt-4 space-y-2">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">桌号 / 取餐号 <span class="text-red-500">*</span></label>
+                            <input type="text" id="table-no" placeholder="例如：A08 或 外卖1号" class="w-full text-sm px-3 py-1.5 border rounded-lg focus:ring-1 focus:ring-brand-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">备注说明</label>
+                            <input type="text" id="order-remark" placeholder="如：打包、无须一次性餐具等" class="w-full text-sm px-3 py-1.5 border rounded-lg focus:ring-1 focus:ring-brand-500 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- 下单按钮 -->
+                    <button onclick="submitOrder()" class="w-full mt-4 bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-lg shadow transition duration-200 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>确认下单</span>
+                    </button>
+                </div>
             </div>
-        </section>
+        </div>
     </main>
 
-    <div id="cartDrawer" class="fixed inset-0 z-50 overflow-hidden pointer-events-none transition-opacity duration-300 opacity-0">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="toggleCartDrawer()"></div>
-        <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div class="w-screen max-w-md bg-white shadow-2xl pointer-events-auto flex flex-col">
-                
-                <!-- Drawer Header -->
-                <div class="p-4 bg-amber-900 text-amber-50 flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <i class="fa-solid fa-bag-shopping text-amber-400 text-lg"></i>
-                        <h3 class="font-bold text-lg">သင်မှာယူထားသော စာရင်း</h3>
-                    </div>
-                    <button onclick="toggleCartDrawer()" class="p-2 text-amber-300 hover:text-white rounded-lg">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                </div>
-
-                <!-- Order Type Selector -->
-                <div class="p-3 bg-amber-50 border-b border-amber-200 grid grid-cols-3 gap-2">
-                    <button onclick="setOrderType('dine-in')" id="btnDineIn" class="py-2 text-xs font-semibold rounded-xl border transition flex flex-col items-center justify-center space-y-1 bg-amber-600 text-white border-amber-600 shadow-sm">
-                        <i class="fa-solid fa-utensils"></i>
-                        <span>ဆိုင်ထိုင်စားမည်</span>
-                    </button>
-                    <button onclick="setOrderType('takeaway')" id="btnTakeaway" class="py-2 text-xs font-semibold rounded-xl border transition flex flex-col items-center justify-center space-y-1 bg-white text-slate-700 border-slate-300 hover:bg-slate-100">
-                        <i class="fa-solid fa-box-archive"></i>
-                        <span>ပါဆယ်ဝယ်မည်</span>
-                    </button>
-                    <button onclick="setOrderType('delivery')" id="btnDelivery" class="py-2 text-xs font-semibold rounded-xl border transition flex flex-col items-center justify-center space-y-1 bg-white text-slate-700 border-slate-300 hover:bg-slate-100">
-                        <i class="fa-solid fa-motorcycle"></i>
-                        <span>အိမ်အရောက်</span>
-                    </button>
-                </div>
-
-                <!-- Cart Items List -->
-                <div class="flex-1 overflow-y-auto p-4 space-y-3" id="cartItemsContainer">
-                    <!-- Javascript will render cart items here -->
-                </div>
-
-                <!-- Customer Details Form -->
-                <div class="p-4 bg-slate-50 border-t border-slate-200 space-y-3">
-                    <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider">မှာယူသူ အချက်အလက်</h4>
-                    <div>
-                        <input type="text" id="customerName" placeholder="အမည် (Name)" class="w-full text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <input type="tel" id="customerPhone" placeholder="ဖုန်းနံပါတ် (Phone Number)" class="w-full text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                    </div>
-                    
-                    <div id="locationField">
-                        <input type="text" id="customerTable" placeholder="စားပွဲနံပါတ် (Table No. e.g. T-05)" class="w-full text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <textarea id="orderNotes" rows="2" placeholder="အထူးမှာကြားချက် (ဥပမာ- အစပ်လျှော့ပါ၊ ငရုတ်သီးမထည့်ပါနှင့်)" class="w-full text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
-                    </div>
-                </div>
-
-                <!-- Footer Checkout Summary -->
-                <div class="p-4 bg-white border-t border-slate-200 space-y-3">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-slate-600">ကျသင့်ငွေ စုစုပေါင်း:</span>
-                        <span id="cartSubtotal" class="font-bold text-amber-700 text-base">0 MMK</span>
-                    </div>
-
-                    <button onclick="processOrderCheckout()" id="btnSubmitOrder" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold rounded-xl shadow-lg flex items-center justify-center space-x-2 transition">
-                        <i class="fa-brands fa-telegram text-xl"></i>
-                        <span>Telegram သို့ အော်ဒါပို့မည်</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="telegramConfigModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div class="flex items-center justify-between border-b pb-3">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-brands fa-telegram text-sky-500 text-2xl"></i>
-                    <h3 class="font-bold text-lg text-slate-800">Telegram Bot စက်တင်</h3>
-                </div>
-                <button onclick="toggleModal('telegramConfigModal')" class="text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <p class="text-xs text-slate-600 leading-relaxed">
-                ဆိုင်ရှင်၏ Telegram သို့ အော်ဒါ တိုက်ရိုက်ရောက်ရှိစေရန် Bot Token နှင့် Chat ID ကို ဖြည့်သွင်းပေးပါ။
-            </p>
-
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Telegram Bot Token</label>
-                    <input type="text" id="8788751061:AAG6fAxTX501scHdrizQYkT462w2ZdfHQgc" placeholder="e.g. 1234567890:ABCdefGHIjklMNOpqrs..." class="w-full text-xs px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:outline-none font-mono">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Telegram Chat ID (သို့) Channel ID</label>
-                    <input type="text" id="1949334561" placeholder="e.g. 987654321 သို့မဟုတ် -10012345678" class="w-full text-xs px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:outline-none font-mono">
-                </div>
-            </div>
-
-            <!-- Bot Setup Help Guide -->
-            <div class="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-sky-900 space-y-1.5">
-                <p class="font-bold flex items-center space-x-1">
-                    <i class="fa-solid fa-lightbulb text-amber-500"></i>
-                    <span>Bot ပြုလုပ်နည်း တိုတိုတုတ်တုတ်:</span>
-                </p>
-                <ol class="list-decimal pl-4 space-y-1 text-slate-700">
-                    <li>Telegram တွင် <b>@BotFather</b> သို့သွား၍ <code>/newbot</code> စာပို့ပါ။</li>
-                    <li>ရရှိလာသော API Key Token ကို အထက်တွင် ကူးထည့်ပါ။</li>
-                    <li>မိမိ၏ Chat ID သိရန် <b>@userinfobot</b> သို့ စာတစ်စောင် ပို့ကြည့်ပါ။</li>
-                </ol>
-            </div>
-
-            <div class="flex space-x-2 pt-2">
-                <button onclick="testTelegramConnection()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">
-                    <i class="fa-solid fa-vial mr-1"></i> စမ်းသပ်စာပို့မည်
-                </button>
-                <button onclick="saveTelegramSettings()" class="flex-1 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow transition">
-                    သိမ်းဆည်းမည်
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="orderSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl text-center space-y-4">
-            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl">
-                <i class="fa-solid fa-check"></i>
+    <!-- 规格选择弹窗 -->
+    <div id="option-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
+            <div class="p-4 bg-brand-600 text-white flex justify-between items-center">
+                <h3 id="modal-product-name" class="font-bold text-lg">饮品名称</h3>
+                <button onclick="closeOptionModal()" class="text-white/80 hover:text-white text-xl">&times;</button>
             </div>
             
-            <div>
-                <h3 class="font-bold text-xl text-slate-800">အော်ဒါ အောင်မြင်စွာ တင်ပြီးပါပြီ!</h3>
-                <p class="text-xs text-slate-500 mt-1">ကျေးဇူးတင်ရှိပါသည်။ သင်၏ အော်ဒါအချက်အလက်ကို ပြင်ဆင်နေပါပြီ။</p>
+            <div class="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+                <!-- 甜度 -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">选择甜度</label>
+                    <div class="grid grid-cols-4 gap-2" id="sugar-options">
+                        <button onclick="selectOption('sugar', '标准糖')" class="opt-sugar border border-gray-200 text-sm py-1.5 rounded-lg hover:border-brand-500 active">标准糖</button>
+                        <button onclick="selectOption('sugar', '七分糖')" class="opt-sugar border border-gray-200 text-sm py-1.5 rounded-lg hover:border-brand-500">七分糖</button>
+                        <button onclick="selectOption('sugar', '三分糖')" class="opt-sugar border border-gray-200 text-sm py-1.5 rounded-lg hover:border-brand-500">三分糖</button>
+                        <button onclick="selectOption('sugar', '不另外加糖')" class="opt-sugar border border-gray-200 text-sm py-1.5 rounded-lg hover:border-brand-500">无糖</button>
+                    </div>
+                </div>
+
+                <!-- 温度/冰度 -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">选择温度</label>
+                    <div class="grid grid-cols-4 gap-2" id="ice-options">
+                        <button onclick="selectOption('ice', '正常冰')" class="opt-ice border border-gray-200 text-sm py-1.5 rounded-lg hover:border-brand-500 active">正常冰</button>
+                        <button onclick="selectOption('ice', '少冰')" class="opt-ice border border-gray-200 text-sm py-1.5 rounded-lg hover:border-brand-500">少冰</button>
+                        <button onclick="selectOption('ice', '去冰')" class="opt-ice border border-gray-200 text-sm py-1.5 rounded-lg hover:border-brand-500">去冰</button>
+                        <button onclick="selectOption('ice', '热饮')" class="opt-ice border border-gray-200 text-sm py-1.5 rounded-lg hover:border-brand-500">热饮</button>
+                    </div>
+                </div>
+
+                <!-- 加料 -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">加料 (+￥2.00)</label>
+                    <div class="grid grid-cols-3 gap-2" id="topping-options">
+                        <button onclick="toggleTopping('黑糖珍珠', 2)" class="opt-topping border border-gray-200 text-xs py-2 rounded-lg hover:border-brand-500 text-gray-700">黑糖珍珠 +￥2</button>
+                        <button onclick="toggleTopping('椰果', 2)" class="opt-topping border border-gray-200 text-xs py-2 rounded-lg hover:border-brand-500 text-gray-700">椰果 +￥2</button>
+                        <button onclick="toggleTopping('手作芋圆', 2)" class="opt-topping border border-gray-200 text-xs py-2 rounded-lg hover:border-brand-500 text-gray-700">手作芋圆 +￥2</button>
+                        <button onclick="toggleTopping('芝士奶盖', 3)" class="opt-topping border border-gray-200 text-xs py-2 rounded-lg hover:border-brand-500 text-gray-700">芝士奶盖 +￥3</button>
+                        <button onclick="toggleTopping('红豆', 2)" class="opt-topping border border-gray-200 text-xs py-2 rounded-lg hover:border-brand-500 text-gray-700">红豆 +￥2</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Telegram Dispatch Result -->
-            <div id="tgSendResult" class="p-3 bg-slate-50 border rounded-2xl text-xs text-left space-y-1">
-                <!-- Status text will be injected here -->
-            </div>
-
-            <div class="pt-2 flex flex-col space-y-2">
-                <a id="directTelegramLink" href="#" target="_blank" class="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold rounded-xl shadow flex items-center justify-center space-x-2 hidden">
-                    <i class="fa-brands fa-telegram text-lg"></i>
-                    <span>Telegram App တွင် တိုက်ရိုက် ကြည့်ရန်</span>
-                </a>
-                <button onclick="closeSuccessModal()" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition">
-                    ပင်မစာမျက်နှာသို့ ပြန်သွားမည်
-                </button>
+            <div class="p-4 bg-gray-50 border-t flex justify-between items-center">
+                <div>
+                    <span class="text-xs text-gray-500 block">单价</span>
+                    <span id="modal-calculated-price" class="text-xl font-bold text-brand-600">￥0.00</span>
+                </div>
+                <button onclick="confirmAddToCart()" class="bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 rounded-xl font-medium shadow transition">加入购物车</button>
             </div>
         </div>
+    </div>
+
+    <!-- 消息提示弹窗 -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg text-sm z-50 transition-opacity duration-300 opacity-0 pointer-events-none flex items-center gap-2">
+        <i id="toast-icon" class="fa-solid fa-circle-info"></i>
+        <span id="toast-msg">提示信息</span>
     </div>
 
     <script>
-        // Sample Myanmar Menu Data
-        const menuItems = [
-            {
-                id: 1,
-                name: "မုန့်ဟင်းခါး (ငါးဖဲ၊ ဘဲဥပါ)",
-                enName: "Traditional Mohinga Special",
-                category: "breakfast",
-                price: 3500,
-                image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
-                description: "မြန်မာ့ရိုးရာ ငါးဖဲ၊ ဘဲဥ၊ ပဲကြော်တို့ဖြင့် ပူပူစပ်စပ် အရသာရှိသော မုန့်ဟင်းခါး",
-                badge: "လူကြိုက်အများဆုံး"
-            },
-            {
-                id: 2,
-                name: "ရှမ်းခေါက်ဆွဲ (ကြက်/ဝက်)",
-                enName: "Shan Style Rice Noodle Soup",
-                category: "noodles",
-                price: 4000,
-                image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80",
-                description: "ရှမ်းပြည်နယ် ရိုးရာဆန်စီးခေါက်ဆွဲ၊ ကြက်သား သို့မဟုတ် ဝက်သားအနှစ်၊ ရှမ်းချဉ်တို့ဖြင့်",
-                badge: "Chef Special"
-            },
-            {
-                id: 3,
-                name: "ကြက်သား ဒန်ပေါက် (မလိုင်ပါ)",
-                enName: "Special Chicken Biryani",
-                category: "mains",
-                price: 7500,
-                image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80",
-                description: "မွှေးကြိုင်သော Basmati ဆန်၊ နူးညံ့သော ကြက်တောင်ပံ၊ မလိုင် သလပ်နှင့် ဒန်ပေါက်",
-                badge: "HOT"
-            },
-            {
-                id: 4,
-                name: "လက်ဖက်သုပ် အစုံ",
-                enName: "Burmese Tea Leaf Salad",
-                category: "salads",
-                price: 3000,
-                image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
-                description: "ဇယန်းလက်ဖက်အစို၊ ပဲကြော်စုံ၊ ခရမ်းချဉ်သီး၊ ငရုတ်သီးစိမ်းတို့ဖြင့် သုပ်ထားသော မြန်မာ့ဂုဏ်ဆောင်",
-                badge: "Vegetarian"
-            },
-            {
-                id: 5,
-                name: "ကြေးအိုး ဆီချက်/အရည်",
-                enName: "Kyay Oh Noodle Soup",
-                category: "noodles",
-                price: 6000,
-                image: "https://images.unsplash.com/photo-1555126634-323283e090fa?auto=format&fit=crop&w=600&q=80",
-                description: "ဝက်သားလုံး၊ အသည်း၊ အူချို၊ စမုန်စေ့၊ ကြက်ဥ၊ မုန်ညင်းစိမ်းတို့ပါဝင်သော သန့်ရှင်းလတ်ဆတ် ကြေးအိုး",
-                badge: ""
-            },
-            {
-                id: 6,
-                name: "နန်းကြီးသုပ် (ကြက်သား)",
-                enName: "Nan Gyi Thoke Noodle Salad",
-                category: "noodles",
-                price: 4500,
-                image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=600&q=80",
-                description: "ခေါက်ဆွဲနန်းကြီး၊ ကြက်သားဟင်းအနှစ်၊ မုန့်ဖတ်သုပ် အစိမ့်",
-                badge: ""
-            },
-            {
-                id: 7,
-                name: "ဝက်သား သရက်သီးသနပ်ဟင်း",
-                enName: "Pork Curry with Pickled Mango",
-                category: "mains",
-                price: 7000,
-                image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
-                description: "ဆီပြန် ဝက်သားဟင်းနှင့် ချဉ်စပ် သရက်သီးသနပ် တို့ စိမ့်နေအောင် ချက်ထားသော ဟင်းလျာ",
-                badge: "Popular"
-            },
-            {
-                id: 8,
-                name: "ပဲပြုတ် ထမင်းကြော် + ဘဲဥကြော်",
-                enName: "Fried Rice with Boiled Peas & Duck Egg",
-                category: "breakfast",
-                price: 4000,
-                image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=600&q=80",
-                description: "နံနက်ခင်း နွေးထွေးသော မြန်မာ့ရိုးရာ ပဲပြုတ်ဆီဆမ်း ထမင်းကြော်နှင့် ဘဲဥကြော်",
-                badge: ""
-            },
-            {
-                id: 9,
-                name: "မြန်မာ့လဖက်ရည် (ချိုဆိမ့်)",
-                enName: "Traditional Sweet Burmese Tea",
-                category: "drinks",
-                price: 180
+        // --- 1. 商家 Telegram 配置文件（此处配置，不向顾客展示） ---
+        const TELEGRAM_CONFIG = {
+            // 请在此处填写商家的 Bot Token 和 Chat ID
+            botToken: "8788751061:AAG6fAxTX501scHdrizQYkT462w2ZdfHQgc", 
+            chatId: "1949334561"
+        };
+
+        // 饮品菜单列表
+        const products = [
+            { id: 1, name: "黑糖珍珠鲜奶", category: "milktea", price: 18, desc: "浓郁黑糖搭配Q弹珍珠与纯鲜牛奶", icon: "🍵" },
+            { id: 2, name: "观音乌龙奶茶", category: "milktea", price: 16, desc: "传统铁观音茶底，高香回甘", icon: "🧋" },
+            { id: 3, name: "杨枝甘露", category: "fruittea", price: 22, desc: "鲜切芒果、红柚粒与香浓椰浆", icon: "🥭" },
+            { id: 4, name: "多肉葡萄茶", category: "fruittea", price: 20, desc: "手剥葡萄肉，搭配清爽绿茶底", icon: "🍇" },
+            { id: 5, name: "茉莉毛尖鲜奶茶", category: "milktea", price: 15, desc: "双倍茉莉花香，口感清爽", icon: "🌸" },
+            { id: 6, name: "生椰拿铁茶", category: "milktea", price: 19, desc: "特调生椰乳与清香乌龙的碰撞", icon: "🥥" },
+            { id: 7, name: "枸杞红枣养生茶", category: "traditional", price: 14, desc: "原叶煲煮，温补暖胃", icon: "🫖" },
+            { id: 8, name: "冷萃四季春", category: "traditional", price: 12, desc: "低温慢萃，解腻无负担", icon: "🍃" }
+        ];
+
+        // 购物车与选中项状态
+        let cart = [];
+        let currentModalProduct = null;
+        let selectedOptions = {
+            sugar: '标准糖',
+            ice: '正常冰',
+            toppings: []
+        };
+
+        // --- 2. 页面加载与菜单渲染 ---
+        window.onload = function() {
+            renderProducts(products);
+            updateCartUI();
+        };
+
+        function renderProducts(items) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+
+            items.forEach(prod => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition";
+                card.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-16 h-16 bg-brand-50 rounded-lg flex items-center justify-center text-3xl flex-shrink-0">
+                            ${prod.icon}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-gray-800 text-sm truncate">${prod.name}</h3>
+                            <p class="text-xs text-gray-400 mt-1 line-clamp-2">${prod.desc}</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-50">
+                        <span class="text-brand-600 font-bold text-base">￥${prod.price.toFixed(2)}</span>
+                        <button onclick="openOptionModal(${prod.id})" class="bg-brand-50 text-brand-600 hover:bg-brand-600 hover:text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                            + 选规格
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 分类筛选
+        function filterCategory(cat) {
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-600');
+            });
+            event.target.classList.remove('bg-white', 'text-gray-600');
+            event.target.classList.add('bg-brand-600', 'text-white');
+
+            if (cat === 'all') {
+                renderProducts(products);
+            } else {
+                const filtered = products.filter(p => p.category === cat);
+                renderProducts(filtered);
+            }
+        }
+
+        // --- 3. 规格选择逻辑 ---
+        function openOptionModal(productId) {
+            currentModalProduct = products.find(p => p.id === productId);
+            if (!currentModalProduct) return;
+
+            selectedOptions = {
+                sugar: '标准糖',
+                ice: '正常冰',
+                toppings: []
+            };
+
+            document.getElementById('modal-product-name').innerText = currentModalProduct.name;
+            resetOptionButtons();
+            calculateModalPrice();
+
+            document.getElementById('option-modal').classList.remove('hidden');
+        }
+
+        function closeOptionModal() {
+            document.getElementById('option-modal').classList.add('hidden');
+        }
+
+        function resetOptionButtons() {
+            document.querySelectorAll('.opt-sugar').forEach(btn => {
+                btn.classList.toggle('bg-brand-600', btn.innerText === selectedOptions.sugar);
+                btn.classList.toggle('text-white', btn.innerText === selectedOptions.sugar);
+            });
+            document.querySelectorAll('.opt-ice').forEach(btn => {
+                btn.classList.toggle('bg-brand-600', btn.innerText === selectedOptions.ice);
+                btn.classList.toggle('text-white', btn.innerText === selectedOptions.ice);
+            });
+            document.querySelectorAll('.opt-topping').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white');
+                btn.classList.add('text-gray-700');
+            });
+        }
+
+        function selectOption(type, value) {
+            selectedOptions[type] = value;
+            const buttons = document.querySelectorAll(`.opt-${type}`);
+            buttons.forEach(btn => {
+                if (btn.innerText === value || (type === 'sugar' && value === '不另外加糖' && btn.innerText === '无糖')) {
+                    btn.classList.add('bg-brand-600', 'text-white');
+                } else {
+                    btn.classList.remove('bg-brand-600', 'text-white');
+                }
+            });
+        }
+
+        function toggleTopping(name, price) {
+            const index = selectedOptions.toppings.findIndex(t => t.name === name);
+            const btn = event.currentTarget;
+
+            if (index > -1) {
+                selectedOptions.toppings.splice(index, 1);
+                btn.classList.remove('bg-brand-600', 'text-white');
+                btn.classList.add('text-gray-700');
+            } else {
+                selectedOptions.toppings.push({ name, price });
+                btn.classList.add('bg-brand-600', 'text-white');
+                btn.classList.remove('text-gray-700');
+            }
+            calculateModalPrice();
+        }
+
+        function calculateModalPrice() {
+            if (!currentModalProduct) return;
+            let price = currentModalProduct.price;
+            selectedOptions.toppings.forEach(t => price += t.price);
+            document.getElementById('modal-calculated-price').innerText = `￥${price.toFixed(2)}`;
+            return price;
+        }
+
+        function confirmAddToCart() {
+            const itemPrice = calculateModalPrice();
+            const cartItem = {
+                cartId: Date.now(),
+                id: currentModalProduct.id,
+                name: currentModalProduct.name,
+                totalPrice: itemPrice,
+                sugar: selectedOptions.sugar,
+                ice: selectedOptions.ice,
+                toppings: [...selectedOptions.toppings],
+                count: 1
+            };
+
+            cart.push(cartItem);
+            updateCartUI();
+            closeOptionModal();
+            showToast("已加入购物车", "success");
+        }
+
+        // --- 4. 购物车更新 ---
+        function updateCartUI() {
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400 py-8 text-sm">购物车是空的，快去选购吧~</p>`;
+                document.getElementById('subtotal-price').innerText = '￥0.00';
+                document.getElementById('total-price').innerText = '￥0.00';
+                return;
+            }
+
+            let grandTotal = 0;
+
+            cart.forEach((item, index) => {
+                grandTotal += item.totalPrice * item.count;
+                const toppingText = item.toppings.map(t => t.name).join(',');
+                const specDesc = `${item.sugar} / ${item.ice}${toppingText ? ' / ' + toppingText : ''}`;
+
+                const div = document.createElement('div');
+                div.className = "py-2.5 flex justify-between items-center text-xs";
+                div.innerHTML = `
+                    <div class="flex-1 pr-2">
+                        <div class="font-bold text-gray-800 text-sm">${item.name}</div>
+                        <div class="text-gray-400 mt-0.5">${specDesc}</div>
+                        <div class="text-brand-600 font-bold mt-1">￥${(item.totalPrice * item.count).toFixed(2)}</div>
+                    </div>
+                    <div class="flex items-center space-x-2 bg-gray-50 rounded-lg p-1 border">
+                        <button onclick="changeQuantity(${index}, -1)" class="w-5 h-5 bg-white shadow-sm rounded flex items-center justify-center font-bold text-gray-600 hover:bg-gray-100">-</button>
+                        <span class="font-bold px-1">${item.count}</span>
+                        <button onclick="changeQuantity(${index}, 1)" class="w-5 h-5 bg-white shadow-sm rounded flex items-center justify-center font-bold text-gray-600 hover:bg-gray-100">+</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            document.getElementById('subtotal-price').innerText = `￥${grandTotal.toFixed(2)}`;
+            document.getElementById('total-price').innerText = `￥${grandTotal.toFixed(2)}`;
+        }
+
+        function changeQuantity(index, delta) {
+            cart[index].count += delta;
+            if (cart[index].count <= 0) {
+                cart.splice(index, 1);
+            }
+            updateCartUI();
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartUI();
+        }
+
+        // --- 5. 下单并推送 Telegram 消息 (不展示任何客户 ID) ---
+        async function submitOrder() {
+            if (cart.length === 0) {
+                showToast("购物车内暂无商品！", "error");
+                return;
+            }
+
+            const tableNo = document.getElementById('table-no').value.trim();
+            const remark = document.getElementById('order-remark').value.trim();
+
+            if (!tableNo) {
+                showToast("请输入桌号或取餐识别号", "error");
+                document.getElementById('table-no').focus();
+                return;
+            }
+
+            // 生成随机的订单号 (不使用任何用户 ID)
+            const orderNo = "ORD" + Math.floor(100000 + Math.random() * 900000);
+
+            let total = 0;
+            let itemsDetailText = "";
+
+            cart.forEach((item, i) => {
+                const sub = item.totalPrice * item.count;
+                total += sub;
+                const toppingStr = item.toppings.length > 0 ? item.toppings.map(t=>t.name).join('+') : '无额外加料';
+                itemsDetailText += `${i+1}. <b>${item.name}</b> x ${item.count}\n   └ 规格: ${item.sugar} | ${item.ice} | ${toppingStr}\n   └ 小计: ￥${sub.toFixed(2)}\n`;
+            });
+
+            const orderTime = new Date().toLocaleString('zh-CN');
+
+            // 格式化要发送给商家 Telebot 的消息文本 (完全不包含个人 ID)
+            const messageHtml = `
+🍵 <b>【国韵茶饮 - 新订单通知】</b>
+--------------------------------
+<b>订单编号:</b> <code>${orderNo}</code>
+<b>桌号/取餐号:</b> <code>${tableNo}</code>
+<b>下单时间:</b> ${orderTime}
+--------------------------------
+<b>饮品明细:</b>
+${itemsDetailText}
+--------------------------------
+<b>金额合计:</b> ￥${total.toFixed(2)}
+<b>备注说明:</b> ${remark || '无'}
+            `.trim();
+
+            showToast("正在提交订单...", "info");
+
+            const success = await sendToTelegram(messageHtml);
+
+            if (success) {
+                showToast("下单成功！商家已接收您的订单", "success");
+                cart = [];
+                document.getElementById('table-no').value = '';
+                document.getElementById('order-remark').value = '';
+                updateCartUI();
+            }
+        }
+
+        // 发送 Telegram 消息 (含指数退避重试)
+        async function sendToTelegram(text) {
+            if (!TELEGRAM_CONFIG.botToken || !TELEGRAM_CONFIG.chatId) {
+                // 若未配置 Token，演示打印
+                alert(`[演示模式 - 订单成功生成]\n\n订单消息已生成（未附加任何用户 ID 信息）。\n\n发送给商家的内容:\n${text.replace(/<[^>]+>/g, '')}`);
+                return true;
+            }
+
+            const url = `https://api.telegram.org/bot${TELEGRAM_CONFIG.botToken}/sendMessage`;
+            const payload = {
+                chat_id: TELEGRAM_CONFIG.chatId,
+                text: text,
+                parse_mode: 'HTML'
+            };
+
+            let attempts = 0;
+            const maxAttempts = 5;
+            let delay = 1000;
+
+            while (attempts < maxAttempts) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+                    if (data.ok) {
+                        return true;
+                    } else {
+                        throw new Error(data.description || "消息发送异常");
+                    }
+                } catch (err) {
+                    attempts++;
+                    if (attempts >= maxAttempts) {
+                        showToast(`订单推送信道故障: ${err.message}`, "error");
+                        return false;
+                    }
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2; // 退避重试 1s, 2s, 4s, 8s, 16s
+                }
+            }
+            return false;
+        }
+
+        // --- 6. 提示框组件 ---
+        function showToast(message, type = "info") {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = message;
+            
+            if (type === 'success') {
+                toastIcon.className = "fa-solid fa-circle-check text-green-400";
+            } else if (type === 'error') {
+                toastIcon.className = "fa-solid fa-circle-xmark text-red-400";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-info text-blue-400";
+            }
+
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+
